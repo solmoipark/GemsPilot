@@ -44,6 +44,11 @@ def main(argv: list[str] | None = None) -> int:
             kernel_root = Path(args.kernel_root).resolve()
             os.environ["INVERSE_GEMS_ROOT"] = str(kernel_root)
             os.chdir(kernel_root)
+        # keep the bench output tree readable by artifact tools after chdir
+        roots = os.environ.get("INVERSE_GEMS_ARTIFACT_ROOTS", "")
+        os.environ["INVERSE_GEMS_ARTIFACT_ROOTS"] = (
+            f"{roots}{os.pathsep}{out}" if roots else str(out)
+        )
         summary = run_agent_bench(config, out=out)
         print(
             json.dumps(

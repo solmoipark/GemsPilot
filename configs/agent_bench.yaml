@@ -45,8 +45,8 @@ scenarios:
 
   - id: global_registry_feasible_opc_slag
     kind: diagnose
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     design_query:
       name: bench_diag_feasible
       design_space: {allowed_materials: [OPC, slag], age_days: 28}
@@ -55,8 +55,8 @@ scenarios:
 
   - id: global_registry_opc_only_feasible
     kind: diagnose
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     design_query:
       name: bench_diag_opc_only
       design_space: {allowed_materials: [OPC], strict_materials: true, age_days: 28}
@@ -64,8 +64,8 @@ scenarios:
 
   - id: unknown_target_blocked
     kind: diagnose
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     design_query:
       name: bench_diag_unknown_target
       design_space: {allowed_materials: [OPC, slag], age_days: 28}
@@ -74,8 +74,8 @@ scenarios:
 
   - id: recovery_real_registry_screening
     kind: design_recovery
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_surrogate/model.joblib]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_surrogate/model.joblib"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     max_attempts: 3
     design_query:
       name: bench_recovery_real
@@ -98,8 +98,8 @@ scenarios:
 
   - id: unknown_system_zero_candidates
     kind: diagnose
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     design_query:
       name: bench_diag_unknown_system
       material_system: no_such_system
@@ -108,8 +108,8 @@ scenarios:
 
   - id: caution_target_blocked_by_default_policy
     kind: diagnose
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     design_query: &caution_query
       name: bench_caution_hemicarbonate
       design_space: {allowed_materials: [OPC, fly_ash, limestone], age_days: 28}
@@ -118,16 +118,16 @@ scenarios:
 
   - id: caution_target_allowed_with_relaxed_policy
     kind: diagnose
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     target_policy: allow_caution
     design_query: *caution_query
     expect: {feasible: true, selected_id: global_real_v1_multiage_OPC_fly_ash_limestone}
 
   - id: relaxation_prefers_policy_over_materials
     kind: propose
-    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
-    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    model_registry: "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml"
     design_query: *caution_query
     expect:
       first_proposal_kind: allow_caution_targets
