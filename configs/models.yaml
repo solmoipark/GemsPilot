@@ -1,0 +1,102 @@
+# GemsPilot experiment model roster.
+#
+# All models are called through OpenRouter (single OPENROUTER_API_KEY) via
+# litellm model strings "openrouter/<vendor>/<model>", except the anchor
+# entry, which uses the direct OpenAI API (OPENAI_API_KEY) to cross-check
+# that OpenRouter routing does not change results.
+#
+# Fields per model:
+#   id            litellm model string
+#   label         short name used in output paths and figures
+#   vendor        model developer (matrix axis)
+#   tier          frontier | mid | small | anchor (matrix axis)
+#   open_weights  true for openly released weights
+#   max_cost_usd  hard per-model budget for one full experiment sweep;
+#                 the experiment driver must stop scheduling episodes for a
+#                 model once its accumulated cost exceeds this cap
+#   params        optional litellm.completion overrides (null drops the key,
+#                 e.g. temperature: null for models that reject it)
+
+api_key_env: OPENROUTER_API_KEY
+
+models:
+  # --- frontier -----------------------------------------------------------
+  - id: openrouter/anthropic/claude-opus-5
+    label: claude-opus-5
+    vendor: anthropic
+    tier: frontier
+    open_weights: false
+    max_cost_usd: 80
+  - id: openrouter/openai/gpt-5.6-sol
+    label: gpt-5.6-sol
+    vendor: openai
+    tier: frontier
+    open_weights: false
+    max_cost_usd: 80
+  - id: openrouter/google/gemini-3.1-pro-preview
+    label: gemini-3.1-pro
+    vendor: google
+    tier: frontier
+    open_weights: false
+    max_cost_usd: 60
+  - id: openrouter/moonshotai/kimi-k3
+    label: kimi-k3
+    vendor: moonshot
+    tier: frontier
+    open_weights: true
+    max_cost_usd: 60
+
+  # --- mid ----------------------------------------------------------------
+  - id: openrouter/anthropic/claude-sonnet-5
+    label: claude-sonnet-5
+    vendor: anthropic
+    tier: mid
+    open_weights: false
+    max_cost_usd: 40
+  - id: openrouter/openai/gpt-5.6-terra
+    label: gpt-5.6-terra
+    vendor: openai
+    tier: mid
+    open_weights: false
+    max_cost_usd: 40
+  - id: openrouter/google/gemini-3.7-flash
+    label: gemini-3.7-flash
+    vendor: google
+    tier: mid
+    open_weights: false
+    max_cost_usd: 20
+  - id: openrouter/z-ai/glm-5.3
+    label: glm-5.3
+    vendor: z-ai
+    tier: mid
+    open_weights: true
+    max_cost_usd: 30
+
+  # --- small --------------------------------------------------------------
+  - id: openrouter/anthropic/claude-haiku-4.5
+    label: claude-haiku-4.5
+    vendor: anthropic
+    tier: small
+    open_weights: false
+    max_cost_usd: 15
+  - id: openrouter/openai/gpt-5.6-luna
+    label: gpt-5.6-luna
+    vendor: openai
+    tier: small
+    open_weights: false
+    max_cost_usd: 10
+  - id: openrouter/deepseek/deepseek-v4-flash
+    label: deepseek-v4-flash
+    vendor: deepseek
+    tier: small
+    open_weights: true
+    max_cost_usd: 5
+
+  # --- anchor (direct API, reproducibility cross-check) --------------------
+  - id: gpt-4.1-mini
+    label: gpt-4.1-mini-direct
+    vendor: openai
+    tier: anchor
+    open_weights: false
+    api_key_env: OPENAI_API_KEY
+    max_cost_usd: 10

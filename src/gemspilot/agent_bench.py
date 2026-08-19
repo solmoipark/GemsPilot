@@ -19,6 +19,12 @@ Scenario kinds:
 
 - ``parse``             natural-language request -> task_query preview via
                         the LLM entrance; expects parse status and task type.
+- ``agent_qa``          a natural-language task run through the LLM agent
+                        loop (``runner.run_episode``); the final answer is
+                        graded deterministically against a kernel-derived
+                        target (numeric with tolerance, choice, refusal, or
+                        pure behavior checks) plus trajectory constraints
+                        (forbidden tools, max tool calls).
 
 A scenario may declare ``requires: [path, ...]`` (files) and/or
 ``requires_env: [NAME, ...]`` (environment variables, also satisfied by a
@@ -32,6 +38,7 @@ stability, cache effects included by design).
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -41,9 +48,140 @@ import pandas as pd
 from . import agent_tools
 from inverse_gems.utils import load_yaml, write_json
 
+_NUMBER_RE = re.compile(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?")
+# Tools whose successful execution counts as "running a calculation" for
+# refusal grading (asking a clarifying question must not be preceded by one).
+_EXECUTION_TOOLS = {"run_forward", "run_task", "run_design_with_recovery"}
+_DEFAULT_REFUSAL_KEYWORDS = [
+    "infeasible", "not feasible", "cannot", "can't", "unable", "ambiguous",
+    "clarif", "not possible", "refuse", "not allowed", "specify",
+]
+
 
 def _check(name: str, expected: Any, actual: Any) -> dict[str, Any]:
     return {"name": name, "expected": expected, "actual": actual, "ok": expected == actual}
+
+
+def _extract_numbers(text: str, hint: str | None = None, window: int = 120) -> list[float]:
+    """Numbers in ``text``; with ``hint``, prefer those shortly after the label."""
+    if hint:
+        near: list[float] = []
+        for match in re.finditer(re.escape(hint), text, re.IGNORECASE):
+            segment = text[match.end(): match.end() + window]
+            near.extend(float(token) for token in _NUMBER_RE.findall(segment))
+        if near:
+            return near
+    return [float(token) for token in _NUMBER_RE.findall(text)]
+
+
+def grade_agent_qa(scenario: dict[str, Any], outcome: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Deterministically grade one agent episode outcome against a scenario.
+
+    Returns (checks, metrics). Pure function of its inputs so it can be unit
+    tested without an LLM in the loop.
+    """
+    grading = dict(scenario.get("grading") or {})
+    answer_kind = str(grading.get("answer_kind", "numeric"))
+    final = str(outcome.get("final_text") or "")
+    tool_log = list(outcome.get("tool_calls") or [])
+    called = [str(entry.get("tool")) for entry in tool_log]
+    checks: list[dict[str, Any]] = []
+
+    checks.append(_check("final_answer_reached", "final_answer", outcome.get("stop_reason")))
+
+    if answer_kind == "numeric":
+        target = float(grading["target"])
+        abs_tol = grading.get("abs_tol")
+        tolerance = float(abs_tol) if abs_tol is not None else float(grading.get("rel_tol", 0.02)) * abs(target)
+        candidates = _extract_numbers(final, grading.get("extract"))
+        hit = any(abs(value - target) <= tolerance for value in candidates)
+        checks.append({
+            "name": "numeric_answer",
+            "expected": f"{target} ± {tolerance:g}",
+            "actual": candidates[:8],
+            "ok": hit,
+        })
+    elif answer_kind == "choice":
+        target = str(grading["target"]).strip().lower()
+        final_lower = final.lower()
+        # Whole-word match so e.g. "feasible" does not match inside
+        # "infeasible"; must_not_contain rules out the opposing answer.
+        hit = re.search(rf"(?<![\w-]){re.escape(target)}(?![\w-])", final_lower) is not None
+        blocked = [
+            bad for bad in (grading.get("must_not_contain") or [])
+            if str(bad).lower() in final_lower
+        ]
+        checks.append({
+            "name": "choice_answer",
+            "expected": target,
+            "actual": final[:200],
+            "ok": hit and not blocked,
+        })
+    elif answer_kind == "refusal":
+        keywords = [str(k).lower() for k in (grading.get("keywords") or _DEFAULT_REFUSAL_KEYWORDS)]
+        checks.append({
+            "name": "refusal_language",
+            "expected": f"one of {keywords[:6]}...",
+            "actual": final[:200],
+            "ok": any(keyword in final.lower() for keyword in keywords),
+        })
+        executed = [
+            entry for entry in tool_log
+            if entry.get("tool") in _EXECUTION_TOOLS and entry.get("ok")
+        ]
+        checks.append({
+            "name": "no_execution_before_refusal",
+            "expected": 0,
+            "actual": len(executed),
+            "ok": not executed,
+        })
+    elif answer_kind != "behavior":
+        checks.append({
+            "name": "known_answer_kind",
+            "expected": "numeric|choice|refusal|behavior",
+            "actual": answer_kind,
+            "ok": False,
+        })
+
+    constraints = dict(scenario.get("constraints") or {})
+    for forbidden in constraints.get("forbidden_tools") or []:
+        count = called.count(str(forbidden))
+        checks.append({
+            "name": f"never_calls_{forbidden}",
+            "expected": 0,
+            "actual": count,
+            "ok": count == 0,
+        })
+    if "max_tool_calls" in constraints:
+        limit = int(constraints["max_tool_calls"])
+        checks.append({
+            "name": "tool_calls_within_limit",
+            "expected": f"<={limit}",
+            "actual": len(called),
+            "ok": len(called) <= limit,
+        })
+    expect = dict(scenario.get("expect") or {})
+    for wanted in expect.get("tools_called_include") or []:
+        checks.append({
+            "name": f"calls_{wanted}",
+            "expected": wanted,
+            "actual": sorted(set(called)),
+            "ok": str(wanted) in called,
+        })
+
+    usage = dict(outcome.get("usage") or {})
+    minimal = constraints.get("min_tool_calls")
+    metrics = {
+        "steps": outcome.get("steps"),
+        "tool_calls": len(called),
+        "unnecessary_calls": (len(called) - int(minimal)) if minimal is not None else None,
+        "stop_reason": outcome.get("stop_reason"),
+        "prompt_tokens": usage.get("prompt_tokens"),
+        "completion_tokens": usage.get("completion_tokens"),
+        "cost_usd": usage.get("cost_usd"),
+        "providers": outcome.get("providers"),
+    }
+    return checks, metrics
 
 
 def _check_ge(name: str, minimum: Any, actual: Any) -> dict[str, Any]:
@@ -217,6 +355,24 @@ def _run_scenario_once(scenario: dict[str, Any], out_dir: Path, run_index: int) 
             )
         signature = {"task_type": task_type, "status": summary.get("status")}
 
+    elif kind == "agent_qa":
+        from .runner import Episode, run_episode  # lazy: pulls in litellm
+
+        episode = Episode(
+            model=str(scenario["model"]),
+            workspace=run_out / "ws",
+            allow_real=bool(scenario.get("allow_real", False)),
+            protocol=str(scenario.get("protocol", "full")),
+            max_steps=int(scenario.get("max_steps", 12)),
+            completion_params=dict(scenario.get("completion_params") or {}),
+        )
+        if scenario.get("no_tools"):
+            episode.toolset = []
+        outcome = run_episode(str(scenario["task"]), episode)
+        checks, metrics = grade_agent_qa(scenario, outcome)
+        signature = {"checks_ok": {check["name"]: check["ok"] for check in checks}}
+        return {"checks": checks, "signature": signature, "metrics": metrics}
+
     else:
         checks.append({"name": "known_kind", "expected": "known scenario kind", "actual": kind, "ok": False})
 
@@ -311,16 +467,22 @@ def run_agent_bench(
                 }
             )
         passed = all(check["ok"] for check in checks)
-        results.append(
-            {
-                "id": scenario_id,
-                "kind": scenario.get("kind"),
-                "status": "passed" if passed else "failed",
-                "repeat": repeat,
-                "duration_s": round(duration, 3),
-                "checks": checks,
-            }
-        )
+        entry = {
+            "id": scenario_id,
+            "kind": scenario.get("kind"),
+            "status": "passed" if passed else "failed",
+            "repeat": repeat,
+            "duration_s": round(duration, 3),
+            "checks": checks,
+        }
+        metrics = [run["metrics"] for run in runs if run.get("metrics")]
+        if metrics:
+            entry["metrics"] = metrics
+            entry["family"] = scenario.get("family")
+            entry["model"] = scenario.get("model")
+            entry["protocol"] = scenario.get("protocol", "full")
+            entry["no_tools"] = bool(scenario.get("no_tools", False))
+        results.append(entry)
 
     summary = {
         "total": len(results),

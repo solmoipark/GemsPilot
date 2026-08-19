@@ -2,6 +2,9 @@
 
 Commands:
     gemspilot bench --out DIR [--config configs/agent_bench.yaml] [--kernel-root PATH]
+    gemspilot experiment --out DIR [--models configs/models.yaml]
+        [--scenarios FILE ...] [--conditions tf tt nt] [--repeats N]
+        [--only-models LABEL ...] [--only-items ID ...] [--kernel-root PATH]
 
 ``--kernel-root`` points at an InverseGems working tree that holds the
 chemistry database and model registries. It is exported as
@@ -30,7 +33,41 @@ def build_parser() -> argparse.ArgumentParser:
         default=os.environ.get("INVERSE_GEMS_ROOT"),
         help="InverseGems working tree with data/ and configs/ (default: $INVERSE_GEMS_ROOT).",
     )
+
+    experiment = sub.add_parser(
+        "experiment", help="Run the model x condition x scenario matrix."
+    )
+    experiment.add_argument("--models", default="configs/models.yaml")
+    experiment.add_argument(
+        "--scenarios",
+        nargs="+",
+        default=["configs/agent_qa_generated.yaml", "configs/agent_qa_manual.yaml"],
+    )
+    experiment.add_argument("--out", required=True)
+    experiment.add_argument("--conditions", nargs="+", default=None,
+                            help="Condition codes: tf (tools+full), tt (tools+toc), nt (no tools).")
+    experiment.add_argument("--repeats", type=int, default=1)
+    experiment.add_argument("--only-models", nargs="*", default=None)
+    experiment.add_argument("--only-items", nargs="*", default=None)
+    experiment.add_argument("--max-steps", type=int, default=12)
+    experiment.add_argument(
+        "--kernel-root",
+        default=os.environ.get("INVERSE_GEMS_ROOT"),
+        help="InverseGems working tree with data/ and configs/ (default: $INVERSE_GEMS_ROOT).",
+    )
     return parser
+
+
+def _enter_kernel_root(kernel_root: str | None, out: Path) -> None:
+    """Export INVERSE_GEMS_ROOT, chdir to it, and whitelist the out tree."""
+    if kernel_root:
+        root = Path(kernel_root).resolve()
+        os.environ["INVERSE_GEMS_ROOT"] = str(root)
+        os.chdir(root)
+    roots = os.environ.get("INVERSE_GEMS_ARTIFACT_ROOTS", "")
+    os.environ["INVERSE_GEMS_ARTIFACT_ROOTS"] = (
+        f"{roots}{os.pathsep}{out}" if roots else str(out)
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -40,15 +77,7 @@ def main(argv: list[str] | None = None) -> int:
 
         config = Path(args.config).resolve()
         out = Path(args.out).resolve()
-        if args.kernel_root:
-            kernel_root = Path(args.kernel_root).resolve()
-            os.environ["INVERSE_GEMS_ROOT"] = str(kernel_root)
-            os.chdir(kernel_root)
-        # keep the bench output tree readable by artifact tools after chdir
-        roots = os.environ.get("INVERSE_GEMS_ARTIFACT_ROOTS", "")
-        os.environ["INVERSE_GEMS_ARTIFACT_ROOTS"] = (
-            f"{roots}{os.pathsep}{out}" if roots else str(out)
-        )
+        _enter_kernel_root(args.kernel_root, out)
         summary = run_agent_bench(config, out=out)
         print(
             json.dumps(
@@ -63,6 +92,28 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0 if summary["failed"] == 0 else 1
+    if args.command == "experiment":
+        from .experiment import run_experiment
+        from .runner import load_env_file
+
+        # Resolve inputs and credentials before entering the kernel root.
+        load_env_file(Path.cwd() / ".env")
+        models = Path(args.models).resolve()
+        scenarios = [Path(p).resolve() for p in args.scenarios]
+        out = Path(args.out).resolve()
+        _enter_kernel_root(args.kernel_root, out)
+        summary = run_experiment(
+            models,
+            scenarios,
+            out,
+            repeats=args.repeats,
+            conditions=args.conditions,
+            only_models=args.only_models,
+            only_items=args.only_items,
+            max_steps=args.max_steps,
+        )
+        print(json.dumps(summary, indent=2))
+        return 0
     return 2
 
 

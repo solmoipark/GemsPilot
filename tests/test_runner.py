@@ -6,9 +6,34 @@ from gemspilot.runner import (
     _apply_protocol,
     _policy_check,
     _remap_workspace_args,
+    _sanitize_llm_args,
     build_tool_schema,
     default_toolset,
 )
+
+
+def test_sanitize_drops_filler_values_but_keeps_false():
+    cleaned = _sanitize_llm_args({
+        "forward_query": "name: x",
+        "dat_lst": "",
+        "retry_water_policy": " ",
+        "session": None,
+        "max_xgems_calls": 0,
+        "use_mock": False,
+        "disable_plots": True,
+    })
+    assert cleaned == {"forward_query": "name: x", "use_mock": False, "disable_plots": True}
+    assert _sanitize_llm_args({"max_xgems_calls": 3})["max_xgems_calls"] == 3
+
+
+def test_array_parameters_carry_items_schema():
+    for spec in default_toolset():
+        schema = build_tool_schema(spec)
+        for prop in schema["function"]["parameters"]["properties"].values():
+            if prop["type"] == "array":
+                assert prop["items"]["type"] in {
+                    "string", "integer", "number", "boolean", "object"
+                }
 
 
 def test_default_toolset_schemas_are_valid_function_specs():
@@ -72,3 +97,4 @@ def test_episode_defaults():
     assert episode.allow_real is False
     assert episode.protocol == "full"
     assert episode.max_steps == 12
+    assert episode.completion_params == {}

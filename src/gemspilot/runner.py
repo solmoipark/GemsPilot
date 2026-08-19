@@ -22,6 +22,7 @@ from __future__ import annotations
 import inspect
 import json
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -69,15 +70,27 @@ def _first_paragraph(doc: str | None) -> str:
     return " ".join(doc.strip().split("\n\n")[0].split())
 
 
+_INNER_JSON_TYPES = {"str": "string", "int": "integer", "float": "number",
+                     "bool": "boolean", "dict": "object"}
+
+
 def _annotation_type(annotation: Any) -> dict[str, Any]:
     if annotation in _JSON_TYPES:
-        return {"type": _JSON_TYPES[annotation]}
-    text = str(annotation)
-    for py, js in [("str", "string"), ("int", "integer"), ("float", "number"),
-                   ("bool", "boolean"), ("list", "array"), ("dict", "object")]:
-        if text.startswith(py) or f"{py} |" in text or f"| {py}" in text:
-            return {"type": js}
-    return {"type": "string"}
+        entry = {"type": _JSON_TYPES[annotation]}
+    else:
+        text = str(annotation)
+        entry = {"type": "string"}
+        for py, js in [("str", "string"), ("int", "integer"), ("float", "number"),
+                       ("bool", "boolean"), ("list", "array"), ("dict", "object")]:
+            if text.startswith(py) or f"{py} |" in text or f"| {py}" in text:
+                entry = {"type": js}
+                break
+    if entry["type"] == "array":
+        # Google's function-calling API rejects array parameters without an
+        # explicit items schema; derive it from list[...] or default to string.
+        match = re.search(r"list\[\s*(str|int|float|bool|dict)", str(annotation))
+        entry["items"] = {"type": _INNER_JSON_TYPES.get(match.group(1), "string") if match else "string"}
+    return entry
 
 
 def build_tool_schema(spec: ToolSpec) -> dict[str, Any]:
@@ -132,6 +145,9 @@ class Episode:
     temperature: float = 0.0
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     toolset: list[ToolSpec] = field(default_factory=default_toolset)
+    # Per-model litellm.completion overrides (e.g. {"temperature": None} for
+    # reasoning models that reject the parameter). None values drop the key.
+    completion_params: dict[str, Any] = field(default_factory=dict)
 
 
 def load_env_file(path: str | Path = ".env") -> None:
@@ -143,6 +159,25 @@ def load_env_file(path: str | Path = ".env") -> None:
         if line and not line.startswith("#") and "=" in line:
             key, _, value = line.partition("=")
             os.environ.setdefault(key.strip(), value.strip())
+
+
+def _sanitize_llm_args(arguments: dict[str, Any]) -> dict[str, Any]:
+    """Drop filler values some models emit for optional parameters.
+
+    OpenAI-family models tend to populate every optional parameter with a
+    type-default filler ("" for strings, 0 for max_xgems_calls). Passing
+    those through crashes the kernel (e.g. dat_lst="" opens Path("") ==
+    '.'), so treat them as "not provided". Boolean False is never dropped —
+    it is load-bearing for use_mock gating.
+    """
+    cleaned: dict[str, Any] = {}
+    for key, value in arguments.items():
+        if value is None or (isinstance(value, str) and not value.strip()):
+            continue
+        if key == "max_xgems_calls" and value in (0, "0"):
+            continue
+        cleaned[key] = value
+    return cleaned
 
 
 def _remap_workspace_args(name: str, arguments: dict[str, Any], workspace: Path) -> dict[str, Any]:
@@ -219,6 +254,7 @@ def run_episode(task: str, episode: Episode) -> dict[str, Any]:
     trajectory_path = workspace / "trajectory.jsonl"
     usage_totals = {"prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
     tool_call_log: list[dict[str, Any]] = []
+    providers_seen: list[str] = []
     final_text: str | None = None
     stop_reason = "max_steps"
 
@@ -226,28 +262,50 @@ def run_episode(task: str, episode: Episode) -> dict[str, Any]:
         with trajectory_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(event, ensure_ascii=False, default=str) + "\n")
 
+    request_base: dict[str, Any] = {"temperature": episode.temperature}
+    request_base.update(episode.completion_params)
+    if episode.model.startswith("openrouter/"):
+        # Ask OpenRouter to report the billed cost in usage (credits == USD).
+        extra_body = dict(request_base.get("extra_body") or {})
+        extra_body.setdefault("usage", {"include": True})
+        request_base["extra_body"] = extra_body
+    request_base = {k: v for k, v in request_base.items() if v is not None}
+
     for step in range(episode.max_steps):
         started = time.perf_counter()
         response = litellm.completion(
             model=episode.model,
             messages=messages,
-            tools=tool_schemas,
-            temperature=episode.temperature,
+            # No-tool baseline episodes omit the tools parameter entirely;
+            # an empty list is rejected by some providers.
+            **({"tools": tool_schemas} if tool_schemas else {}),
+            **request_base,
         )
         elapsed = time.perf_counter() - started
         message = response.choices[0].message
         usage = getattr(response, "usage", None)
+        step_cost = None
         if usage is not None:
             usage_totals["prompt_tokens"] += getattr(usage, "prompt_tokens", 0) or 0
             usage_totals["completion_tokens"] += getattr(usage, "completion_tokens", 0) or 0
-        try:
-            usage_totals["cost_usd"] += litellm.completion_cost(completion_response=response) or 0.0
-        except Exception:  # noqa: BLE001 - cost lookup is best-effort
-            pass
+            step_cost = getattr(usage, "cost", None)  # OpenRouter-native billed cost
+        if step_cost:
+            usage_totals["cost_usd"] += float(step_cost)
+        else:
+            try:
+                usage_totals["cost_usd"] += (
+                    litellm.completion_cost(completion_response=response) or 0.0
+                )
+            except Exception:  # noqa: BLE001 - cost lookup is best-effort
+                pass
 
+        provider = getattr(response, "provider", None)  # OpenRouter serving provider
+        if provider and provider not in providers_seen:
+            providers_seen.append(provider)
         tool_calls = getattr(message, "tool_calls", None) or []
         record({
             "step": step, "latency_s": round(elapsed, 2),
+            "provider": provider,
             "assistant": message.content,
             "tool_calls": [
                 {"name": c.function.name, "arguments": c.function.arguments} for c in tool_calls
@@ -275,6 +333,7 @@ def run_episode(task: str, episode: Episode) -> dict[str, Any]:
             except json.JSONDecodeError as exc:
                 payload = {"ok": False, "error": f"invalid tool arguments: {exc}"}
             else:
+                arguments = _sanitize_llm_args(arguments)
                 spec = tool_specs.get(name)
                 if spec is None:
                     payload = {"ok": False, "error": f"unknown tool {name!r}"}
@@ -302,6 +361,7 @@ def run_episode(task: str, episode: Episode) -> dict[str, Any]:
 
     outcome = {
         "model": episode.model,
+        "providers": providers_seen,
         "protocol": episode.protocol,
         "final_text": final_text,
         "stop_reason": stop_reason,

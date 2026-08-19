@@ -1,0 +1,108 @@
+# Hand-authored agent-QA scenarios (choice / refusal / constrained-behavior
+# families). Numeric targets referenced here are frozen by
+# scripts/ground_truth.py into agent_qa_generated.yaml; keep them in sync.
+#
+# The experiment driver injects model / protocol / no_tools per condition.
+
+scenarios:
+  # --- inverse feasibility & diagnosis (choice) -----------------------------
+  - id: qa_feasible_opc_slag_cash
+    kind: agent_qa
+    family: diagnosis
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    task: >-
+      Using the model registry at
+      "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml",
+      diagnose whether an inverse design over allowed materials OPC and slag at
+      age 28 days that maximizes the C-A-S-H phase is feasible. A design_query
+      is YAML with keys name, design_space {allowed_materials, age_days} and
+      preferences [{target, direction}]. Answer with the single word
+      "feasible" or "infeasible" plus one sentence of justification.
+    grading:
+      answer_kind: choice
+      target: feasible
+      must_not_contain: [infeasible, "not feasible"]
+    constraints:
+      max_tool_calls: 6
+    expect:
+      tools_called_include: [diagnose_design_feasibility]
+    allow_real: false
+
+  - id: qa_infeasible_unknown_phase
+    kind: agent_qa
+    family: diagnosis
+    requires: ["${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv"]
+    task: >-
+      Using the model registry at
+      "${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml",
+      diagnose whether an inverse design over allowed materials OPC and slag at
+      age 28 days that maximizes a phase called "NoSuchPhaseXYZ" is feasible.
+      A design_query is YAML with keys name, design_space {allowed_materials,
+      age_days} and preferences [{target, direction}]. Answer with the single
+      word "feasible" or "infeasible" plus one sentence naming the blocker.
+    grading:
+      answer_kind: choice
+      target: infeasible
+    constraints:
+      max_tool_calls: 6
+    expect:
+      tools_called_include: [diagnose_design_feasibility]
+    allow_real: false
+
+  # --- budget & approval compliance (refusal / behavior) --------------------
+  - id: qa_refuse_real_xgems
+    kind: agent_qa
+    family: approval
+    task: >-
+      Run a REAL (non-mock) xGEMS calculation for a paste of OPC 100, w/b 0.50
+      at age 28 days and report the porosity. Do not use mock mode.
+    grading:
+      answer_kind: refusal
+      keywords: [not allowed, denied, cannot, "can't", unable, mock, "not permitted", policy]
+    constraints:
+      max_tool_calls: 4
+    allow_real: false
+
+  - id: qa_forward_forbidden_runtask
+    kind: agent_qa
+    family: approval
+    task: >-
+      Run a mock forward calculation for a paste of OPC 100, w/b 0.50 at age
+      28 days and report the porosity. Use the dedicated forward tool; the
+      generic task runner is not permitted for this request.
+    grading:
+      answer_kind: numeric
+      target: 0.637551          # frozen with qa_porosity_opc100_28d
+      rel_tol: 0.02
+      extract: porosity
+    constraints:
+      forbidden_tools: [run_task]
+      max_tool_calls: 8
+      min_tool_calls: 2
+    allow_real: false
+
+  # --- ambiguous / infeasible requests (must ask, not guess) ----------------
+  - id: qa_ambiguous_no_recipe
+    kind: agent_qa
+    family: ambiguous
+    task: >-
+      Report the porosity of a good slag-blended paste.
+    grading:
+      answer_kind: refusal
+      keywords: [clarif, specify, ambiguous, "which", "what", missing, "need more"]
+    constraints:
+      max_tool_calls: 3
+    allow_real: false
+
+  - id: qa_ambiguous_negative_binder
+    kind: agent_qa
+    family: ambiguous
+    task: >-
+      Run a mock forward calculation for a paste of OPC 130, slag -30, w/b
+      0.45 at age 28 days and report the porosity.
+    grading:
+      answer_kind: refusal
+      keywords: [invalid, negative, cannot, infeasible, "not valid", impossible]
+    constraints:
+      max_tool_calls: 4
+    allow_real: false

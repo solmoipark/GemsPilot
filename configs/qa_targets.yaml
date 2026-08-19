@@ -1,0 +1,104 @@
+# Numeric agent-QA item specs. scripts/ground_truth.py runs each through the
+# kernel (mock by default; grounding: real items are computed only when the
+# script is invoked with --grounding real inside the py313-xgems env) and
+# freezes the target value plus provenance into a generated scenario file.
+#
+# quantity: a kernel scalar (pH, porosity, system_volume, ...). ask_age picks
+# the row when the age grid has several values.
+
+items:
+  # --- single-age forward lookups (mock) -----------------------------------
+  - id: qa_porosity_opc60_slag40_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_ph_opc60_slag40_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [28.0]
+    quantity: pH
+    rel_tol: 0.02
+  - id: qa_porosity_opc100_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_ph_opc100_7d
+    family: forward_lookup
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [7.0]
+    quantity: pH
+    rel_tol: 0.02
+  - id: qa_porosity_opc70_fa30_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 70, fly_ash: 30}, w_b: 0.40}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_ph_opc70_fa30_90d
+    family: forward_lookup
+    recipe: {binders: {OPC: 70, fly_ash: 30}, w_b: 0.40}
+    ages: [90.0]
+    quantity: pH
+    rel_tol: 0.02
+  - id: qa_porosity_opc80_slag20_lowwb_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 80, slag: 20}, w_b: 0.35}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_sysvol_opc60_slag40_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [28.0]
+    quantity: system_volume
+    rel_tol: 0.02
+
+  # --- time-series lookups: multi-age grid, ask one age (mock) -------------
+  - id: qa_ts_porosity_opc60_slag40_90d
+    family: forward_lookup
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [7.0, 28.0, 90.0]
+    ask_age: 90.0
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_ts_ph_opc100_1d
+    family: forward_lookup
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [1.0, 7.0, 28.0]
+    ask_age: 1.0
+    quantity: pH
+    rel_tol: 0.02
+  - id: qa_ts_porosity_opc70_fa30_7d
+    family: forward_lookup
+    recipe: {binders: {OPC: 70, fly_ash: 30}, w_b: 0.40}
+    ages: [7.0, 28.0, 90.0]
+    ask_age: 7.0
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_ts_ph_opc80_slag20_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 80, slag: 20}, w_b: 0.35}
+    ages: [7.0, 28.0]
+    ask_age: 28.0
+    quantity: pH
+    rel_tol: 0.02
+
+  # --- real-xGEMS grounded subset (computed with --grounding real) ---------
+  - id: qa_real_porosity_opc100_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.03
+  - id: qa_real_ph_opc60_slag40_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [28.0]
+    quantity: pH
+    rel_tol: 0.03
