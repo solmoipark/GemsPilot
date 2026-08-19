@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gemspilot"
+version = "0.1.0.dev0"
+description = "LLM agent layer and GEMS-Agent-Bench for the InverseGems deterministic thermodynamic-modeling kernel."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "inverse-gems @ git+https://github.com/solmoipark/InverseGems",
+  "mcp>=1.2",
+  "pandas",
+  "pyyaml",
+  "numpy",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+llm = ["litellm>=1.60"]
+
+[project.scripts]
+gemspilot = "gemspilot.cli:main"
+gemspilot-mcp = "gemspilot.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,165 @@
+# GEMS-Agent-Bench default scenarios.
+#
+# Mock scenarios always run; global-DB scenarios declare `requires:` and are
+# skipped (not failed) when the chemistry DB artifacts are absent.
+# `repeat: 2` additionally asserts rerun stability (same outcome twice,
+# cache effects included).
+
+scenarios:
+  - id: forward_single_age_mock
+    kind: forward_mock
+    repeat: 2
+    forward_query:
+      name: bench_forward_single
+      task: forward_calculation
+      recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+      age_grid: {values: [28.0]}
+      outputs: {phase_masses: all, phase_volumes: all, phase_volumes_reconstructed: all, aqueous_species: all, scalars: all}
+      plots: []
+      response_summary: {phases: [Mock Portlandite], scalars: [pH, porosity]}
+    expect: {status: complete, row_count: 1}
+
+  - id: budget_stops_time_series
+    kind: budget_guardrail
+    max_xgems_calls: 2
+    forward_query:
+      name: bench_budget
+      recipe: {binders: {OPC: 60, fly_ash: 40}, w_b: 0.45}
+      age_grid: {values: [1.0, 7.0, 28.0]}
+      outputs: {phase_masses: all, phase_volumes: all, phase_volumes_reconstructed: all, aqueous_species: all, scalars: all}
+      plots: []
+      response_summary: {phases: [Mock Portlandite], scalars: [pH]}
+    expect: {completed_rows: 2, skipped_budget_rows: 1}
+
+  - id: session_records_run
+    kind: session_recall
+    forward_query:
+      name: bench_session
+      task: forward_calculation
+      recipe: {binders: {OPC: 70, slag: 30}, w_b: 0.40}
+      age_grid: {values: [28.0]}
+      outputs: {phase_masses: all, phase_volumes: all, phase_volumes_reconstructed: all, aqueous_species: all, scalars: all}
+      plots: []
+      response_summary: {phases: [Mock Portlandite], scalars: [pH]}
+    expect: {min_events: 1}
+
+  - id: global_registry_feasible_opc_slag
+    kind: diagnose
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    design_query:
+      name: bench_diag_feasible
+      design_space: {allowed_materials: [OPC, slag], age_days: 28}
+      preferences: [{target: C-A-S-H, direction: maximize}]
+    expect: {feasible: true, selected_id: global_real_v1_multiage_OPC_slag}
+
+  - id: global_registry_opc_only_feasible
+    kind: diagnose
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    design_query:
+      name: bench_diag_opc_only
+      design_space: {allowed_materials: [OPC], strict_materials: true, age_days: 28}
+    expect: {feasible: true, selected_id: global_real_v1_multiage_OPC_only}
+
+  - id: unknown_target_blocked
+    kind: diagnose
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    design_query:
+      name: bench_diag_unknown_target
+      design_space: {allowed_materials: [OPC, slag], age_days: 28}
+      preferences: [{target: NoSuchPhaseXYZ, direction: maximize}]
+    expect: {feasible: false, blocker_kinds: [target_missing, unallowed_materials]}
+
+  - id: recovery_real_registry_screening
+    kind: design_recovery
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_surrogate/model.joblib]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    max_attempts: 3
+    design_query:
+      name: bench_recovery_real
+      material_system: OPC_slag
+      design_space: {allowed_materials: [OPC], strict_materials: true, age_days: 28}
+      preferences: [{target: porosity, direction: minimize}]
+      search_top_k: 5
+      selection_top_k: 3
+    expect:
+      status: complete
+      changes_applied_kinds: [allow_additional_materials]
+      max_attempt_count: 2
+
+  - id: llm_parse_forward_request
+    kind: parse
+    requires_env: [OPENAI_API_KEY]
+    request: "OPC 60, 슬래그 40, w/b 0.45로 28일 재령의 상 조성과 공극률을 계산해줘"
+    expect:
+      task_type_in: [forward_calculation, forward_time_series]
+
+  - id: unknown_system_zero_candidates
+    kind: diagnose
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    design_query:
+      name: bench_diag_unknown_system
+      material_system: no_such_system
+      design_space: {allowed_materials: [OPC], age_days: 28}
+    expect: {feasible: false}
+
+  - id: caution_target_blocked_by_default_policy
+    kind: diagnose
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    design_query: &caution_query
+      name: bench_caution_hemicarbonate
+      design_space: {allowed_materials: [OPC, fly_ash, limestone], age_days: 28}
+      preferences: [{target: hemicarbonate, direction: maximize}]
+    expect: {feasible: false}
+
+  - id: caution_target_allowed_with_relaxed_policy
+    kind: diagnose
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    target_policy: allow_caution
+    design_query: *caution_query
+    expect: {feasible: true, selected_id: global_real_v1_multiage_OPC_fly_ash_limestone}
+
+  - id: relaxation_prefers_policy_over_materials
+    kind: propose
+    requires: [${INVERSE_GEMS_ROOT}/data/global_chem_db_real_v1_multiage/global_chemistry/global_model_table.csv]
+    model_registry: ${INVERSE_GEMS_ROOT}/configs/design_query_model_registry.global_v1.yaml
+    design_query: *caution_query
+    expect:
+      first_proposal_kind: allow_caution_targets
+      proposal_kinds_include: [allow_additional_materials]
+
+  - id: filter_refines_candidates
+    kind: filter
+    rows:
+      - {meta__recipe_id: a, x__OPC: 70.0, x__slag: 30.0, y__porosity: 0.34}
+      - {meta__recipe_id: b, x__OPC: 40.0, x__slag: 60.0, y__porosity: 0.28}
+      - {meta__recipe_id: c, x__OPC: 30.0, x__slag: 70.0, y__porosity: 0.26}
+    where:
+      - {column: slag, op: "<", value: 65}
+      - {column: porosity, op: "<=", value: 0.30}
+    expect: {matched_rows: 1}
+
+  - id: past_runs_memory
+    kind: past_runs
+    forward_query:
+      name: bench_past_runs
+      task: forward_calculation
+      recipe: {binders: {OPC: 55, fly_ash: 45}, w_b: 0.42}
+      age_grid: {values: [28.0]}
+      outputs: {phase_masses: all, phase_volumes: all, phase_volumes_reconstructed: all, aqueous_species: all, scalars: all}
+      plots: []
+      response_summary: {phases: [Mock Portlandite], scalars: [pH]}
+    binder_contains: fly_ash
+    expect: {min_matched: 1}
+
+  - id: llm_parse_inverse_request
+    kind: parse
+    requires_env: [OPENAI_API_KEY]
+    request: "OPC와 슬래그, 석회석으로 28일 재령에서 공극률을 최소화하는 배합을 찾아줘"
+    expect:
+      task_type: inverse_design
