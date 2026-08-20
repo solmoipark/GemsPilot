@@ -49,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     experiment.add_argument("--repeats", type=int, default=1)
     experiment.add_argument("--only-models", nargs="*", default=None)
     experiment.add_argument("--only-items", nargs="*", default=None)
+    experiment.add_argument("--exclude-items", nargs="*", default=None)
     experiment.add_argument("--max-steps", type=int, default=12)
     experiment.add_argument(
         "--kernel-root",
@@ -121,6 +122,7 @@ def main(argv: list[str] | None = None) -> int:
             conditions=args.conditions,
             only_models=args.only_models,
             only_items=args.only_items,
+            exclude_items=args.exclude_items,
             max_steps=args.max_steps,
         )
         print(json.dumps(summary, indent=2))

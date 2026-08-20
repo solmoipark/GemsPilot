@@ -101,6 +101,7 @@ def run_experiment(
     conditions: list[str] | None = None,
     only_models: list[str] | None = None,
     only_items: list[str] | None = None,
+    exclude_items: list[str] | None = None,
     max_steps: int = 12,
 ) -> dict[str, Any]:
     from .agent_bench import run_agent_bench
@@ -109,6 +110,8 @@ def run_experiment(
     scenarios = load_scenarios(scenario_files)
     if only_items:
         scenarios = [s for s in scenarios if s["id"] in set(only_items)]
+    if exclude_items:
+        scenarios = [s for s in scenarios if s["id"] not in set(exclude_items)]
     condition_codes = list(conditions or CONDITIONS)
     for code in condition_codes:
         if code not in CONDITIONS:
