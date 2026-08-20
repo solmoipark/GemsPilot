@@ -32,6 +32,9 @@ CONDITIONS: dict[str, dict[str, Any]] = {
     "tt": {"protocol": "toc", "no_tools": False},
     "nt": {"protocol": "full", "no_tools": True},
     "rt": {"protocol": "full", "no_tools": False, "max_steps": 4},
+    # TOC ceiling sensitivity (review RM-09): same TOC protocol with twice
+    # the step budget, to separate navigation failure from budget exhaustion.
+    "t24": {"protocol": "toc", "no_tools": False, "max_steps": 24},
 }
 # Checks that grade the *answer* (vs. trajectory constraints); used to derive
 # the primary correctness metric that is comparable across conditions.

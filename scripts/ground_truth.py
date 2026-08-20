@@ -150,12 +150,22 @@ def main() -> int:
             "kind": "agent_qa",
             "family": item["family"],
             "task": _task_text(item, grounding),
-            "grading": {
-                "answer_kind": "numeric",
-                "target": round(target, 6),
-                "rel_tol": float(item.get("rel_tol", 0.02)),
-                "extract": EXTRACT_HINTS.get(item["quantity"], item["quantity"]),
-            },
+            "grading": (
+                # pH is logarithmic: grade with an absolute tolerance.
+                {
+                    "answer_kind": "numeric",
+                    "target": round(target, 6),
+                    "abs_tol": 0.1,
+                    "extract": "pH",
+                }
+                if item["quantity"] == "pH"
+                else {
+                    "answer_kind": "numeric",
+                    "target": round(target, 6),
+                    "rel_tol": float(item.get("rel_tol", 0.02)),
+                    "extract": EXTRACT_HINTS.get(item["quantity"], item["quantity"]),
+                }
+            ),
             "constraints": {"max_tool_calls": 8, "min_tool_calls": 2},
             "allow_real": grounding == "real",
             "provenance": {

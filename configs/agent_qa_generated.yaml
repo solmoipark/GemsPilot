@@ -26,8 +26,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 12.6
-    rel_tol: 0.02
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2
@@ -63,8 +63,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 12.6
-    rel_tol: 0.02
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2
@@ -101,8 +101,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 12.6
-    rel_tol: 0.02
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2
@@ -177,8 +177,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 12.6
-    rel_tol: 0.02
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2
@@ -215,8 +215,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 12.6
-    rel_tol: 0.02
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2
@@ -369,8 +369,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 12.661533
-    rel_tol: 0.03
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2
@@ -409,8 +409,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 12.661534
-    rel_tol: 0.03
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2
@@ -449,8 +449,8 @@ scenarios:
   grading:
     answer_kind: numeric
     target: 13.310888
-    rel_tol: 0.03
     extract: pH
+    abs_tol: 0.1
   constraints:
     max_tool_calls: 8
     min_tool_calls: 2

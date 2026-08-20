@@ -66,6 +66,26 @@ def main() -> int:
         })
     stats = pd.DataFrame(rows)
 
+    # Item-level bootstrap CI (samples items with replacement; captures item
+    # selection variance, which the repeat CI does not).
+    rng = np.random.default_rng(20260821)
+    boot_rows = []
+    item_means = (
+        ran.groupby(["model", "condition", "item"])["answer_correct"]
+        .mean()
+        .reset_index(name="acc")
+    )
+    for (model, condition), group in item_means.groupby(["model", "condition"]):
+        values = group["acc"].to_numpy(dtype=float)
+        n = len(values)
+        samples = rng.choice(values, size=(2000, n), replace=True).mean(axis=1)
+        lo, hi = np.percentile(samples, [2.5, 97.5])
+        boot_rows.append({
+            "model": model, "condition": condition, "items": n,
+            "boot_lo": round(float(lo), 4), "boot_hi": round(float(hi), 4),
+        })
+    stats = stats.merge(pd.DataFrame(boot_rows), on=["model", "condition"], how="left")
+
     # --- 2. gain / loss / retention vs the no-tool baseline ---------------
     majority = (
         ran.groupby(["model", "tier", "condition", "item"])["answer_correct"]
