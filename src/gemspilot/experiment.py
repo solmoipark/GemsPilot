@@ -11,6 +11,10 @@ Windows paths under MAX_PATH):
 - ``tf``  tools on, protocol full
 - ``tt``  tools on, protocol toc
 - ``nt``  no tools (baseline; same prompt, no tool schemas)
+- ``rt``  router-only ablation: tools on, protocol full, but max_steps=4 —
+          enough for the single parse->run->read->answer path of the v1
+          copilot, with no headroom for observe-replan loops (diagnosis,
+          retries, recovery). Measures the value of iterative replanning.
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ CONDITIONS: dict[str, dict[str, Any]] = {
     "tf": {"protocol": "full", "no_tools": False},
     "tt": {"protocol": "toc", "no_tools": False},
     "nt": {"protocol": "full", "no_tools": True},
+    "rt": {"protocol": "full", "no_tools": False, "max_steps": 4},
 }
 # Checks that grade the *answer* (vs. trajectory constraints); used to derive
 # the primary correctness metric that is comparable across conditions.
