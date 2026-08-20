@@ -238,11 +238,23 @@ def run_episode(task: str, episode: Episode) -> dict[str, Any]:
     load_env_file()
     workspace = episode.workspace
     workspace.mkdir(parents=True, exist_ok=True)
-    roots = os.environ.get(agent_tools.ARTIFACT_ROOTS_ENV, "")
-    if str(workspace) not in roots:
+    # Whitelist this episode's workspace for artifact access, but restore the
+    # variable afterwards: unbounded accumulation across a long sweep exceeds
+    # the Windows 32767-character environment-variable limit and crashes
+    # every subsequent episode in the process.
+    base_roots = os.environ.get(agent_tools.ARTIFACT_ROOTS_ENV, "")
+    if str(workspace) not in base_roots.split(os.pathsep):
         os.environ[agent_tools.ARTIFACT_ROOTS_ENV] = (
-            f"{roots}{os.pathsep}{workspace}" if roots else str(workspace)
+            f"{base_roots}{os.pathsep}{workspace}" if base_roots else str(workspace)
         )
+    try:
+        return _run_episode_inner(task, episode, workspace)
+    finally:
+        os.environ[agent_tools.ARTIFACT_ROOTS_ENV] = base_roots
+
+
+def _run_episode_inner(task: str, episode: Episode, workspace: Path) -> dict[str, Any]:
+    import litellm
 
     tool_specs = {spec.name: spec for spec in episode.toolset}
     tool_schemas = [build_tool_schema(spec) for spec in episode.toolset]
