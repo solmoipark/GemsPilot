@@ -264,6 +264,13 @@ def run_episode(task: str, episode: Episode) -> dict[str, Any]:
 
     request_base: dict[str, Any] = {"temperature": episode.temperature}
     request_base.update(episode.completion_params)
+    # A hung provider request must not stall a whole sweep: bound each call
+    # and let litellm retry transient failures. models.yaml params can override.
+    request_base.setdefault("timeout", 300)
+    request_base.setdefault("num_retries", 2)
+    # Bound per-step generation: unbounded no-tool reasoning can run for many
+    # minutes on slow providers. 4096 tokens is ample for answers and replans.
+    request_base.setdefault("max_tokens", 4096)
     if episode.model.startswith("openrouter/"):
         # Ask OpenRouter to report the billed cost in usage (credits == USD).
         extra_body = dict(request_base.get("extra_body") or {})
