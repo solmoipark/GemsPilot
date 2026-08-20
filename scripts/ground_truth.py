@@ -58,18 +58,25 @@ def _forward_query(item: dict) -> str:
     )
 
 
-def _task_text(item: dict) -> str:
+def _task_text(item: dict, grounding: str) -> str:
     quantity = QUANTITY_PHRASES.get(item["quantity"], item["quantity"])
+    if grounding == "real":
+        mode = (
+            "a forward calculation with real xGEMS execution (allowed for this "
+            'task; pass use_mock=false and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst")'
+        )
+    else:
+        mode = "a mock forward calculation"
     ask_age = item.get("ask_age")
     if ask_age is not None and len(item["ages"]) > 1:
         ages = ", ".join(f"{a:g}" for a in item["ages"])
         return (
-            f"Run a mock forward calculation for a paste of {_recipe_phrase(item['recipe'])} "
+            f"Run {mode} for a paste of {_recipe_phrase(item['recipe'])} "
             f"over ages {ages} days and report {quantity} at age {ask_age:g} days."
         )
     age = item["ages"][0]
     return (
-        f"Run a mock forward calculation for a paste of {_recipe_phrase(item['recipe'])} "
+        f"Run {mode} for a paste of {_recipe_phrase(item['recipe'])} "
         f"at age {age:g} days and report {quantity}."
     )
 
@@ -80,6 +87,10 @@ def main() -> int:
     parser.add_argument("--out", default=str(REPO_ROOT / "configs" / "agent_qa_generated.yaml"))
     parser.add_argument("--work", default=str(REPO_ROOT / "runs" / "ground_truth"))
     parser.add_argument("--grounding", choices=["mock", "real"], default="mock")
+    parser.add_argument(
+        "--dat-lst", default=None,
+        help="GEMS input file list for real runs (default: <kernel-root>/Test-dat.lst).",
+    )
     parser.add_argument(
         "--kernel-root",
         default=os.environ.get("INVERSE_GEMS_ROOT", r"C:\Users\solmo\InverseGems v2"),
@@ -106,13 +117,16 @@ def main() -> int:
             continue
         use_mock = grounding == "mock"
         out_dir = work / item["id"]
+        kwargs: dict = {"use_mock": use_mock}
+        if not use_mock:
+            kwargs["dat_lst"] = args.dat_lst or str(kernel_root / "Test-dat.lst")
         result = agent_tools.run_forward(
-            _forward_query(item), str(out_dir / "run"), str(out_dir / "db"),
-            use_mock=use_mock,
+            _forward_query(item), str(out_dir / "run"), str(out_dir / "db"), **kwargs
         )
         if not result["ok"] or result["summary"].get("status") != "complete":
-            skipped.append((item["id"], f"kernel run failed: {result['summary'].get('status')}"))
-            print(f"[fail] {item['id']}: {result['summary'].get('status')}")
+            reason = result["summary"].get("status") or result.get("error")
+            skipped.append((item["id"], f"kernel run failed: {reason}"))
+            print(f"[fail] {item['id']}: {reason}")
             continue
         summary_csv = Path(result["summary"]["result_summary"]["response_summary"]["out"]).parent \
             / "forward" / "response_summary.csv"
@@ -135,7 +149,7 @@ def main() -> int:
             "id": item["id"],
             "kind": "agent_qa",
             "family": item["family"],
-            "task": _task_text(item),
+            "task": _task_text(item, grounding),
             "grading": {
                 "answer_kind": "numeric",
                 "target": round(target, 6),
@@ -143,7 +157,7 @@ def main() -> int:
                 "extract": EXTRACT_HINTS.get(item["quantity"], item["quantity"]),
             },
             "constraints": {"max_tool_calls": 8, "min_tool_calls": 2},
-            "allow_real": False,
+            "allow_real": grounding == "real",
             "provenance": {
                 "grounding": grounding,
                 "recipe_id": recipe_id,

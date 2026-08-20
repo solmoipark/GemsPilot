@@ -73,16 +73,42 @@ vs the no-tool baseline, and the output-access ablation (protocol full vs toc).
 - ablation: router-only copilot (single parse→run, no replan) vs full agent
 - repeats ≥ 3 (temperature 0; repeats capture provider nondeterminism)
 
-## Implementation steps (next session)
+## Implementation status (2026-08-20)
 
-1. `agent_bench.py`: add `agent_qa` kind → calls `runner.run_episode`,
-   grades with a deterministic extractor (labelled-number regex + tolerance;
-   choice matching; refusal detection by rubric keywords + no-tool-call check).
-2. `scripts/ground_truth.py`: batch-precompute numeric targets (mock via
-   default env; real via py313-xgems) and emit scenario YAML fragments.
-3. `configs/models.yaml` + experiment driver `gemspilot experiment`
-   (matrix loop, per-model cost caps, resumable by item id).
-4. Analysis notebook/script → aggregate CSVs and paper figures.
+1. DONE — `agent_bench.py` `agent_qa` kind + `grade_agent_qa` (numeric with
+   bidirectional labelled-number window; word-boundary choice with
+   `must_not_contain`; refusal keywords + no-execution check with
+   `allow_execution` escape for "value unavailable" items; behavior
+   constraints; per-episode metrics).
+2. DONE — `scripts/ground_truth.py` (mock in default env; real via
+   py313-xgems with `--grounding real`, dat_lst = kernel `Test-dat.lst`).
+   18 mock + 8 real numeric targets frozen in `agent_qa_generated.yaml`.
+3. DONE — `configs/models.yaml` (12 models via OpenRouter, tier x vendor,
+   per-model `max_cost_usd`) + `gemspilot experiment` (conditions tf/tt/nt,
+   resumable per episode, budget-capped, flat CSV). Runner hardening from
+   the pilot: 300 s call timeout, 2 retries, 4096-token completion cap,
+   filler-argument sanitizer, Google array-items schemas.
+4. DONE — `scripts/analyze_experiment.py` (accuracy by model x condition,
+   grounding gain tf-nt, toc delta tt-tf, family breakdown).
+
+Scenario inventory: 59 items across 9 families (forward_lookup 18,
+real_grounded 8, diagnosis 8, approval 5, session 5, ambiguous 5,
+recovery 4, calibration 4, budget 2). Real-grounded episodes must run under
+the py313-xgems env (`<env>/python.exe -m gemspilot.cli experiment
+--only-items qa_real_...`); all other items run in the default env.
+
+Validity-review integration (2026-08-20 review): recovery items grade that
+the agent *reports* what was relaxed (integrity invariant); the no-tool
+baseline is a standing condition; numeric task-completion grading is the
+primary format with choice as auxiliary; repeats>=3 planned for the full
+matrix to report mean±CI.
+
+## Pilot (18 items x 3 conditions x 12 models, 1 repeat, $18.08)
+
+tools+full near ceiling (10/12 models at 100%); no-tool 11-44%; toc drops
+28-61 pp with 79% of toc failures exhausting max_steps in artifact
+navigation — the output-access ablation is the discriminating axis, and
+harder multi-step items are what the full matrix needs.
 
 ## Cost estimate
 

@@ -87,6 +87,46 @@ items:
     quantity: pH
     rel_tol: 0.02
 
+  # --- additional mock lookups (ternary/quaternary systems) -----------------
+  - id: qa_porosity_lc3_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 55, metakaolin: 30, limestone: 15}, w_b: 0.40}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_porosity_opc50_slag30_fa20_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 50, slag: 30, fly_ash: 20}, w_b: 0.50}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_porosity_opc92_sf8_28d
+    family: forward_lookup
+    recipe: {binders: {OPC: 92, silica_fume: 8}, w_b: 0.35}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_sysvol_opc100_90d
+    family: forward_lookup
+    recipe: {binders: {OPC: 100}, w_b: 0.40}
+    ages: [90.0]
+    quantity: system_volume
+    rel_tol: 0.02
+  - id: qa_ts_porosity_opc60_slag40_1d
+    family: forward_lookup
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [1.0, 28.0, 90.0]
+    ask_age: 1.0
+    quantity: porosity
+    rel_tol: 0.02
+  - id: qa_ts_sysvol_opc70_fa30_90d
+    family: forward_lookup
+    recipe: {binders: {OPC: 70, fly_ash: 30}, w_b: 0.40}
+    ages: [28.0, 90.0]
+    ask_age: 90.0
+    quantity: system_volume
+    rel_tol: 0.02
+
   # --- real-xGEMS grounded subset (computed with --grounding real) ---------
   - id: qa_real_porosity_opc100_28d
     family: real_grounded
@@ -101,4 +141,48 @@ items:
     recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
     ages: [28.0]
     quantity: pH
+    rel_tol: 0.03
+  - id: qa_real_porosity_opc60_slag40_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.03
+  - id: qa_real_ph_opc100_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [28.0]
+    quantity: pH
+    rel_tol: 0.03
+  - id: qa_real_porosity_opc70_fa30_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 70, fly_ash: 30}, w_b: 0.40}
+    ages: [28.0]
+    quantity: porosity
+    rel_tol: 0.03
+  - id: qa_real_ph_opc70_fa30_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 70, fly_ash: 30}, w_b: 0.40}
+    ages: [28.0]
+    quantity: pH
+    rel_tol: 0.03
+  - id: qa_real_porosity_opc100_90d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [90.0]
+    quantity: porosity
+    rel_tol: 0.03
+  # system_volume degenerates to ~0 under real xGEMS output units; use a
+  # second-age porosity item instead.
+  - id: qa_real_porosity_opc60_slag40_90d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [90.0]
+    quantity: porosity
     rel_tol: 0.03

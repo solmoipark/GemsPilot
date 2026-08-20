@@ -59,15 +59,26 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _enter_kernel_root(kernel_root: str | None, out: Path) -> None:
-    """Export INVERSE_GEMS_ROOT, chdir to it, and whitelist the out tree."""
+    """Export INVERSE_GEMS_ROOT, chdir to it, and whitelist the out tree.
+
+    Also exports GEMSPILOT_ROOT (for ${GEMSPILOT_ROOT} references in
+    scenario files) and whitelists the repo's fixtures directory so tools
+    like calibrate_scm_kinetics can read bundled input data.
+    """
+    repo_root = Path.cwd().resolve()
+    os.environ.setdefault("GEMSPILOT_ROOT", str(repo_root))
+    fixtures = Path(os.environ["GEMSPILOT_ROOT"]) / "configs" / "fixtures"
     if kernel_root:
         root = Path(kernel_root).resolve()
         os.environ["INVERSE_GEMS_ROOT"] = str(root)
         os.chdir(root)
-    roots = os.environ.get("INVERSE_GEMS_ARTIFACT_ROOTS", "")
-    os.environ["INVERSE_GEMS_ARTIFACT_ROOTS"] = (
-        f"{roots}{os.pathsep}{out}" if roots else str(out)
-    )
+    roots = [
+        p for p in os.environ.get("INVERSE_GEMS_ARTIFACT_ROOTS", "").split(os.pathsep) if p
+    ]
+    for extra in [str(out), str(fixtures)]:
+        if extra not in roots:
+            roots.append(extra)
+    os.environ["INVERSE_GEMS_ARTIFACT_ROOTS"] = os.pathsep.join(roots)
 
 
 def main(argv: list[str] | None = None) -> int:
