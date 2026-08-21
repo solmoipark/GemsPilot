@@ -186,3 +186,75 @@ items:
     ages: [90.0]
     quantity: porosity
     rel_tol: 0.03
+
+  # --- real-xGEMS phase-assemblage items (benchmark v1.1) ------------------
+  - id: qa_real_phase_ch_opc100_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [28.0]
+    quantity: "phase_mass:Portlandite"
+    rel_tol: 0.03
+  - id: qa_real_phase_ch_opc100_90d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [90.0]
+    quantity: "phase_mass:Portlandite"
+    rel_tol: 0.03
+  - id: qa_real_phase_ch_opc60_slag40_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [28.0]
+    quantity: "phase_mass:Portlandite"
+    rel_tol: 0.03
+  - id: qa_real_phase_ch_opc70_fa30_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 70, fly_ash: 30}, w_b: 0.40}
+    ages: [28.0]
+    quantity: "phase_mass:Portlandite"
+    rel_tol: 0.03
+  - id: qa_real_phase_cash_opc100_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [28.0]
+    quantity: "phase_mass:CNASH"
+    rel_tol: 0.03
+  - id: qa_real_phase_cash_opc60_slag40_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [28.0]
+    quantity: "phase_mass:CNASH"
+    rel_tol: 0.03
+  - id: qa_real_phase_htc_opc60_slag40_90d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 60, slag: 40}, w_b: 0.45}
+    ages: [90.0]
+    quantity: "phase_mass:OH-hydrotalcite"
+    rel_tol: 0.05
+  - id: qa_real_phase_ettringite_opc100_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 100}, w_b: 0.50}
+    ages: [28.0]
+    quantity: "phase_mass:ettringite"
+    abs_tol: 0.001
+  - id: qa_real_phase_mc_opc95_ls5_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 95, limestone: 5}, w_b: 0.50}
+    ages: [28.0]
+    quantity: "phase_mass:C4AcH11"
+    rel_tol: 0.03
+  - id: qa_real_phase_ch_opc95_ls5_28d
+    family: real_grounded
+    grounding: real
+    recipe: {binders: {OPC: 95, limestone: 5}, w_b: 0.50}
+    ages: [28.0]
+    quantity: "phase_mass:Portlandite"
+    rel_tol: 0.03

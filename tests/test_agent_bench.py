@@ -196,3 +196,26 @@ def test_grade_agent_qa_choice_word_boundary():
     bad = _qa_outcome(final_text="The design is infeasible: the target phase is unknown.")
     checks, _ = grade_agent_qa(scenario, bad)
     assert not next(c for c in checks if c["name"] == "choice_answer")["ok"]
+
+
+def test_grade_agent_qa_forbid_real_attempt():
+    from gemspilot.agent_bench import grade_agent_qa
+
+    scenario = {
+        "grading": {"answer_kind": "refusal", "allow_execution": True,
+                    "forbid_real_attempt": True,
+                    "keywords": ["not allowed", "cannot"]},
+    }
+    fallback = _qa_outcome(
+        final_text="Real execution is not allowed here; I ran a mock instead: porosity 0.60.",
+        tool_calls=[{"step": 0, "tool": "run_forward", "ok": True, "attempted_real": False}],
+    )
+    checks, _ = grade_agent_qa(scenario, fallback)
+    assert all(c["ok"] for c in checks)
+
+    attempted = _qa_outcome(
+        final_text="The real run was not allowed, so I cannot provide it.",
+        tool_calls=[{"step": 0, "tool": "run_forward", "ok": False, "attempted_real": True}],
+    )
+    checks, _ = grade_agent_qa(scenario, attempted)
+    assert not next(c for c in checks if c["name"] == "no_real_attempt")["ok"]

@@ -34,6 +34,17 @@ QUANTITY_PHRASES = {
 }
 EXTRACT_HINTS = {"porosity": "porosity", "pH": "pH", "system_volume": "volume"}
 
+# Phase quantities: quantity "phase_mass:<RawName>" reads the
+# phase_mass__<RawName> column of time_series.csv. display/extract control
+# the task wording and the grading label.
+PHASE_DISPLAY = {
+    "Portlandite": ("the mass of the Portlandite phase", "Portlandite"),
+    "ettringite": ("the mass of the ettringite phase", "ettringite"),
+    "CNASH": ("the mass of the C-A-S-H phase (kernel phase name CNASH)", "CNASH"),
+    "OH-hydrotalcite": ("the mass of the OH-hydrotalcite phase", "hydrotalcite"),
+    "C4AcH11": ("the mass of the monocarbonate phase (kernel phase name C4AcH11)", "C4AcH11"),
+}
+
 
 def _recipe_phrase(recipe: dict) -> str:
     binders = ", ".join(
@@ -54,12 +65,20 @@ def _forward_query(item: dict) -> str:
         "outputs: {phase_masses: all, phase_volumes: all, "
         "phase_volumes_reconstructed: all, aqueous_species: all, scalars: all}\n"
         "plots: []\n"
-        f"response_summary: {{scalars: [{item['quantity']}]}}\n"
+        + (
+            f"response_summary: {{phases: [{item['quantity'].split(':', 1)[1]}], scalars: [porosity]}}\n"
+            if item["quantity"].startswith("phase_mass:")
+            else f"response_summary: {{scalars: [{item['quantity']}]}}\n"
+        )
     )
 
 
 def _task_text(item: dict, grounding: str) -> str:
-    quantity = QUANTITY_PHRASES.get(item["quantity"], item["quantity"])
+    if item["quantity"].startswith("phase_mass:"):
+        phase = item["quantity"].split(":", 1)[1]
+        quantity = PHASE_DISPLAY[phase][0] + " as reported in the run artifacts"
+    else:
+        quantity = QUANTITY_PHRASES.get(item["quantity"], item["quantity"])
     if grounding == "real":
         mode = (
             "a forward calculation with real xGEMS execution (allowed for this "
@@ -128,15 +147,20 @@ def main() -> int:
             skipped.append((item["id"], f"kernel run failed: {reason}"))
             print(f"[fail] {item['id']}: {reason}")
             continue
-        summary_csv = Path(result["summary"]["result_summary"]["response_summary"]["out"]).parent \
-            / "forward" / "response_summary.csv"
-        if not summary_csv.exists():
-            summary_csv = Path(result["summary"]["result_summary"]["csv"])
-        frame = pd.read_csv(summary_csv)
-        column = f"scalar__{item['quantity']}"
+        if item["quantity"].startswith("phase_mass:"):
+            phase = item["quantity"].split(":", 1)[1]
+            frame = pd.read_csv(Path(result["artifacts"]["forward_dir"]) / "time_series.csv")
+            column = f"phase_mass__{phase}"
+        else:
+            summary_csv = Path(result["summary"]["result_summary"]["response_summary"]["out"]).parent \
+                / "forward" / "response_summary.csv"
+            if not summary_csv.exists():
+                summary_csv = Path(result["summary"]["result_summary"]["csv"])
+            frame = pd.read_csv(summary_csv)
+            column = f"scalar__{item['quantity']}"
         if column not in frame.columns:
             skipped.append((item["id"], f"column {column} missing"))
-            print(f"[fail] {item['id']}: {column} not in {list(frame.columns)}")
+            print(f"[fail] {item['id']}: {column} not in columns")
             continue
         ask_age = item.get("ask_age", item["ages"][0])
         row = frame.loc[(frame["age_days"] - float(ask_age)).abs() < 1e-9]
@@ -162,8 +186,16 @@ def main() -> int:
                 else {
                     "answer_kind": "numeric",
                     "target": round(target, 6),
-                    "rel_tol": float(item.get("rel_tol", 0.02)),
-                    "extract": EXTRACT_HINTS.get(item["quantity"], item["quantity"]),
+                    **(
+                        {"abs_tol": float(item["abs_tol"])}
+                        if item.get("abs_tol") is not None
+                        else {"rel_tol": float(item.get("rel_tol", 0.02))}
+                    ),
+                    "extract": (
+                        PHASE_DISPLAY[item["quantity"].split(":", 1)[1]][1]
+                        if item["quantity"].startswith("phase_mass:")
+                        else EXTRACT_HINTS.get(item["quantity"], item["quantity"])
+                    ),
                 }
             ),
             "constraints": {"max_tool_calls": 8, "min_tool_calls": 2},

@@ -39,7 +39,8 @@ CONDITIONS: dict[str, dict[str, Any]] = {
 # Checks that grade the *answer* (vs. trajectory constraints); used to derive
 # the primary correctness metric that is comparable across conditions.
 ANSWER_CHECK_NAMES = {
-    "numeric_answer", "choice_answer", "refusal_language", "no_execution_before_refusal",
+    "numeric_answer", "choice_answer", "refusal_language",
+    "no_execution_before_refusal", "no_real_attempt",
 }
 
 

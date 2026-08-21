@@ -370,7 +370,12 @@ def _run_episode_inner(task: str, episode: Episode, workspace: Path) -> dict[str
                             payload = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
                         else:
                             payload = _apply_protocol(payload, episode.protocol)
-            tool_call_log.append({"step": step, "tool": name, "ok": payload.get("ok")})
+            entry = {"step": step, "tool": name, "ok": payload.get("ok")}
+            if name in ("run_forward", "run_task", "run_design_with_recovery"):
+                entry["attempted_real"] = arguments.get("use_mock", True) in (
+                    False, "false", "False", 0
+                )
+            tool_call_log.append(entry)
             record({"step": step, "tool_result": {"tool": name, "payload": payload}})
             messages.append({
                 "role": "tool",
