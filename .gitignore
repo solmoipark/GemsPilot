@@ -17,3 +17,12 @@ results/
 # Editors
 .vscode/
 .idea/
+
+# xGEMS system-definition files copied into the working directory at run time
+# (canonical set lives in the InverseGems kernel, located via INVERSE_GEMS_ROOT)
+*-dat.lst
+*-dbr.lst
+*-dch.json
+*-ipm.json
+*-fun.json
+*-dbr-*.json

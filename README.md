@@ -24,7 +24,13 @@ The language model never produces a scientific conclusion. It selects and parame
 pip install -e .[test,llm]
 ```
 
-Real xGEMS execution additionally requires an xGEMS-enabled Python environment and a GEMS system-definition file set; benchmark scenarios that need the InverseGems chemistry database locate it through the `INVERSE_GEMS_ROOT` environment variable.
+Real xGEMS execution additionally requires an xGEMS-enabled Python environment and a GEMS system-definition file set.
+
+GemsPilot ships no GEMS system-definition files of its own. The canonical set (`*-dat.lst`, `*-dch.json`, `*-ipm.json`, `*-fun.json`, `*-dbr*.json`) lives in the InverseGems kernel, alongside the chemistry database. Both are located through the `INVERSE_GEMS_ROOT` environment variable, and benchmark items refer to them as e.g. `${INVERSE_GEMS_ROOT}/Test-dat.lst`:
+
+```bash
+export INVERSE_GEMS_ROOT=/path/to/InverseGems
+```
 
 GemsPilot is built on xGEMS/GEMS3K and Cemdata via the InverseGems kernel. It is an independent project, not affiliated with or endorsed by the GEMS development team.
 
