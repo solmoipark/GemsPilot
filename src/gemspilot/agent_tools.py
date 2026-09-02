@@ -80,6 +80,37 @@ def _resolve_artifact_path(path: str | Path) -> Path:
     )
 
 
+def _optional_kernel_kwargs(func: Any, **candidates: Any) -> dict[str, Any]:
+    """Return the non-None ``candidates`` as keyword arguments for ``func``.
+
+    Newer kernel options (``reaction_model_config``, ``reaction_model_id``,
+    ``materials_config``) are forwarded only when the installed InverseGems
+    signature accepts them. Requesting an option the kernel does not support
+    raises a clear TypeError instead of silently ignoring it.
+    """
+    import inspect
+
+    selected = {name: value for name, value in candidates.items() if value is not None}
+    if not selected:
+        return {}
+    parameters = inspect.signature(func).parameters
+    accepts_any = any(p.kind is inspect.Parameter.VAR_KEYWORD for p in parameters.values())
+    unsupported = sorted(name for name in selected if name not in parameters and not accepts_any)
+    if unsupported:
+        raise TypeError(
+            f"{func.__module__}.{func.__name__} does not accept {unsupported}; "
+            "upgrade the InverseGems kernel to use these options."
+        )
+    return selected
+
+
+def _resolve_config_path(path: str | None) -> str | None:
+    """Validate an optional config file path against the allowed artifact roots."""
+    if path is None:
+        return None
+    return str(_resolve_artifact_path(path))
+
+
 def _load_query_payload(query: Any) -> dict[str, Any]:
     """Accept a dict, a YAML string, or a path to a YAML file."""
     if isinstance(query, dict):
@@ -242,6 +273,9 @@ def run_forward(
     retry_water_on_failure: bool = False,
     retry_water_policy: str = "diagnosis",
     max_xgems_calls: int | None = None,
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
     session: str | None = None,
 ) -> dict[str, Any]:
     """Run a forward query (single age or time series).
@@ -251,6 +285,9 @@ def run_forward(
     agent use) or "ladder" (legacy fixed schedule). ``max_xgems_calls``
     caps non-cached solver invocations for this request; ``session`` logs
     the outcome to a session memory file for multi-turn refinement.
+    ``reaction_model_config`` / ``reaction_model_id`` select the reaction
+    parameter set and ``materials_config`` a materials YAML override; the
+    config paths must lie inside the allowed artifact roots.
     """
     from inverse_gems.api import run_forward_request
 
@@ -266,6 +303,11 @@ def run_forward(
             retry_water_on_failure=retry_water_on_failure,
             retry_water_policy=retry_water_policy,
             max_xgems_calls=max_xgems_calls,
+            reaction_model_id=reaction_model_id,
+            reaction_model_config=_resolve_config_path(reaction_model_config),
+            **_optional_kernel_kwargs(
+                run_forward_request, materials_config=_resolve_config_path(materials_config)
+            ),
         )
     except Exception as exc:  # noqa: BLE001
         return _log_session(session, tool_result("run_forward", ok=False, error=str(exc)))
@@ -281,6 +323,9 @@ def run_task(
     skip_validation: bool = False,
     dat_lst: str | None = None,
     model_registry: str | None = None,
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
     session: str | None = None,
 ) -> dict[str, Any]:
     """Run a structured task_query (forward or inverse design)."""
@@ -297,6 +342,12 @@ def run_task(
             skip_validation=skip_validation,
             model_registry=model_registry,
             disable_plots=True,
+            **_optional_kernel_kwargs(
+                run_request,
+                reaction_model_id=reaction_model_id,
+                reaction_model_config=_resolve_config_path(reaction_model_config),
+                materials_config=_resolve_config_path(materials_config),
+            ),
         )
     except Exception as exc:  # noqa: BLE001
         return _log_session(session, tool_result("run_task", ok=False, error=str(exc)))
@@ -312,6 +363,9 @@ def run_confirmed_query(
     use_mock: bool = False,
     skip_validation: bool = False,
     dat_lst: str | None = None,
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
 ) -> dict[str, Any]:
     """Execute a previously previewed task_query (human-confirmed)."""
     from inverse_gems.api import run_confirmed_request
@@ -326,6 +380,12 @@ def run_confirmed_query(
             skip_validation=skip_validation,
             dat_lst=dat_lst,
             disable_plots=True,
+            **_optional_kernel_kwargs(
+                run_confirmed_request,
+                reaction_model_id=reaction_model_id,
+                reaction_model_config=_resolve_config_path(reaction_model_config),
+                materials_config=_resolve_config_path(materials_config),
+            ),
         )
     except Exception as exc:  # noqa: BLE001
         return tool_result("run_confirmed_query", ok=False, error=str(exc))
@@ -419,6 +479,9 @@ def run_design_with_recovery(
     model_registry: str | None = None,
     target_policy: str = "recommended",
     dat_lst: str | None = None,
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
     session: str | None = None,
 ) -> dict[str, Any]:
     """Observe-replan loop: diagnose, apply top relaxation, re-run (bounded)."""
@@ -437,6 +500,9 @@ def run_design_with_recovery(
             model_registry=model_registry,
             target_policy=target_policy,
             dat_lst=dat_lst,
+            reaction_model_id=reaction_model_id,
+            reaction_model_config=_resolve_config_path(reaction_model_config),
+            materials_config=_resolve_config_path(materials_config),
         )
     except Exception as exc:  # noqa: BLE001
         return _log_session(session, tool_result("run_design_with_recovery", ok=False, error=str(exc)))

@@ -41,6 +41,8 @@ def diagnose_design_query(
     material_systems_config: str | Path | None = None,
     target_policy: str = "recommended",
     default_age_days: float = DEFAULT_AGE_DAYS,
+    reaction_model_id: str | None = None,
+    reaction_model_config: str | Path | None = None,
 ) -> dict[str, Any]:
     """Non-raising feasibility diagnosis for an API-facing design query."""
     registry = load_model_registry(model_registry)
@@ -51,9 +53,9 @@ def diagnose_design_query(
         profiles=profiles,
         target_policy=target_policy,  # type: ignore[arg-type]
         default_age_days=default_age_days,
-        reaction_model_id=None,
+        reaction_model_id=reaction_model_id,
         reaction_model_signature=None,
-        reaction_model_config=None,
+        reaction_model_config=reaction_model_config,
     )
     eligible = [row for row in candidates if row["eligible"]]
     blocker_histogram: dict[str, int] = {}
@@ -307,6 +309,9 @@ def run_design_with_recovery(
     material_systems_config: str | Path | None = None,
     target_policy: str = "recommended",
     dat_lst: str | Path | None = None,
+    reaction_model_id: str | None = None,
+    reaction_model_config: str | Path | None = None,
+    materials_config: str | Path | None = None,
 ) -> dict[str, Any]:
     """Bounded observe-replan loop for scenario (a).
 
@@ -315,6 +320,8 @@ def run_design_with_recovery(
     returned ``attempts`` log and in ``recovery_log.json`` under ``out``.
     """
     from inverse_gems.api import run_request
+
+    from .agent_tools import _optional_kernel_kwargs
 
     out_dir = Path(out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -329,6 +336,8 @@ def run_design_with_recovery(
             model_registry=model_registry,
             material_systems_config=material_systems_config,
             target_policy=options["route_target_policy"],
+            reaction_model_id=reaction_model_id,
+            reaction_model_config=reaction_model_config,
         )
         record: dict[str, Any] = {
             "attempt": attempt,
@@ -355,6 +364,12 @@ def run_design_with_recovery(
                 route_target_policy=options["route_target_policy"],
                 dat_lst=dat_lst,
                 disable_plots=True,
+                **_optional_kernel_kwargs(
+                    run_request,
+                    reaction_model_id=reaction_model_id,
+                    reaction_model_config=reaction_model_config,
+                    materials_config=materials_config,
+                ),
             )
             record["run_status"] = result.status
             record["run_dir"] = str(run_out)
