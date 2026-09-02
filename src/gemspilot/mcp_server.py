@@ -324,6 +324,45 @@ def read_artifact(
     )
 
 
+def _registered_tool_names(server: Any) -> set[str]:
+    manager = getattr(server, "_tool_manager", None)
+    tools = getattr(manager, "_tools", None)
+    if isinstance(tools, dict):
+        return set(tools)
+    try:
+        return {tool.name for tool in manager.list_tools()}
+    except Exception:  # noqa: BLE001 - unknown server API; fall back to no guard
+        return set()
+
+
+def register_extra_toolsets(server: Any) -> list[str]:
+    """Register tools published under the ``gemspilot.toolsets`` entry-point group.
+
+    Every entry point resolves to ToolSpec-like objects (``.name``, ``.func``,
+    ``.policy``); each function is registered as ``server.tool(name=...)``.
+    Broken entry points and names that are already registered are skipped, so
+    a third-party toolset can never break or shadow the built-in tools. The
+    names actually registered are returned (and kept in ``EXTRA_TOOLS``).
+    """
+    from .runner import discover_toolsets
+
+    registered: list[str] = []
+    existing = _registered_tool_names(server)
+    for spec in discover_toolsets():
+        if spec.name in existing:
+            continue
+        try:
+            server.tool(name=spec.name)(spec.func)
+        except Exception:  # noqa: BLE001 - a bad third-party tool must not break the server
+            continue
+        existing.add(spec.name)
+        registered.append(spec.name)
+    return registered
+
+
+EXTRA_TOOLS = register_extra_toolsets(app)
+
+
 def main() -> None:
     app.run()
 
