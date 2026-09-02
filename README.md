@@ -35,3 +35,16 @@ export INVERSE_GEMS_ROOT=/path/to/InverseGems
 GemsPilot is built on xGEMS/GEMS3K and Cemdata via the InverseGems kernel. It is an independent project, not affiliated with or endorsed by the GEMS development team.
 
 **License**: BSD 3-Clause (see [LICENSE](LICENSE)).
+
+### Ground-truth anchors and the kernel's OPC chemistry (2026-09-03)
+
+InverseGems branch `dorgems/p-ig-6-opc-minor-oxides` changes the forward chemistry of every
+OPC-containing recipe: the OPC minor oxides (SO3 as CaSO4, MgO, Na2O, K2O) now reach the xGEMS
+input, so real runs contain sulfur (ettringite/AFm) and alkalis (pore-solution pH ≈ 13.4–13.6
+instead of the portlandite-buffered 12.66). Mock targets also move because the mock runner scales
+with the total input mass. `configs/agent_qa_generated.yaml` was regenerated with that kernel
+(`scripts/ground_truth.py --grounding mock`); its `real_grounded` items still carry the old
+`Test-dat.lst` values and must be regenerated on a machine that has that system.
+`configs/agent_qa_generated_TINN_v4.yaml` holds real anchors computed on the TINN_v4 Cemdata
+system (`--grounding real --dat-lst <MySystem-dat.lst>`); items asking for `CNASH` or
+`OH-hydrotalcite` are absent there because that system names the phases `CSHQ` and `MgAl-OH-LDH`.
