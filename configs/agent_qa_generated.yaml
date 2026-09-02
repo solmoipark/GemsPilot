@@ -1,345 +1,4 @@
 scenarios:
-- id: qa_porosity_opc60_slag40_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 at age 28 days and report
-    the porosity.
-  grading:
-    answer_kind: numeric
-    target: 0.599675
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122327_3c7b00ed_6178e2_age_0001
-    quantity: porosity
-    ask_age_days: 28.0
-- id: qa_ph_opc60_slag40_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 at age 28 days and report
-    the pore-solution pH.
-  grading:
-    answer_kind: numeric
-    target: 12.6
-    extract: pH
-    abs_tol: 0.1
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122327_b1069025_d88d81_age_0001
-    quantity: pH
-    ask_age_days: 28.0
-- id: qa_porosity_opc100_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.5 at age 28 days and report the porosity.
-  grading:
-    answer_kind: numeric
-    target: 0.637551
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122327_6d4abbad_7e8739_age_0001
-    quantity: porosity
-    ask_age_days: 28.0
-- id: qa_ph_opc100_7d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.5 at age 7 days and report the pore-solution
-    pH.
-  grading:
-    answer_kind: numeric
-    target: 12.6
-    extract: pH
-    abs_tol: 0.1
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122328_c666bf62_b062a1_age_0001
-    quantity: pH
-    ask_age_days: 7.0
-- id: qa_porosity_opc70_fa30_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 at age 28 days and report
-    the porosity.
-  grading:
-    answer_kind: numeric
-    target: 0.560984
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122328_20faafbd_db2a12_age_0001
-    quantity: porosity
-    ask_age_days: 28.0
-- id: qa_ph_opc70_fa30_90d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 at age 90 days and report
-    the pore-solution pH.
-  grading:
-    answer_kind: numeric
-    target: 12.6
-    extract: pH
-    abs_tol: 0.1
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122328_a9a24237_90b944_age_0001
-    quantity: pH
-    ask_age_days: 90.0
-- id: qa_porosity_opc80_slag20_lowwb_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 80, slag 20, w/b 0.35 at age 28 days and report
-    the porosity.
-  grading:
-    answer_kind: numeric
-    target: 0.548576
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122329_63af1ed5_d55537_age_0001
-    quantity: porosity
-    ask_age_days: 28.0
-- id: qa_sysvol_opc60_slag40_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 at age 28 days and report
-    the total system volume.
-  grading:
-    answer_kind: numeric
-    target: 64.179287
-    rel_tol: 0.02
-    extract: volume
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122329_14b132c6_d253e3_age_0001
-    quantity: system_volume
-    ask_age_days: 28.0
-- id: qa_ts_porosity_opc60_slag40_90d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 over ages 7, 28, 90 days
-    and report the porosity at age 90 days.
-  grading:
-    answer_kind: numeric
-    target: 0.601301
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122329_540e0f71_4dc45d_age_0003
-    quantity: porosity
-    ask_age_days: 90.0
-- id: qa_ts_ph_opc100_1d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.5 over ages 1, 7, 28 days and report
-    the pore-solution pH at age 1 days.
-  grading:
-    answer_kind: numeric
-    target: 12.6
-    extract: pH
-    abs_tol: 0.1
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122330_feff0ec2_156303_age_0001
-    quantity: pH
-    ask_age_days: 1.0
-- id: qa_ts_porosity_opc70_fa30_7d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 over ages 7, 28, 90
-    days and report the porosity at age 7 days.
-  grading:
-    answer_kind: numeric
-    target: 0.552743
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122330_c1160ca0_c72592_age_0001
-    quantity: porosity
-    ask_age_days: 7.0
-- id: qa_ts_ph_opc80_slag20_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 80, slag 20, w/b 0.35 over ages 7, 28 days and
-    report the pore-solution pH at age 28 days.
-  grading:
-    answer_kind: numeric
-    target: 12.6
-    extract: pH
-    abs_tol: 0.1
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122331_6c821b0e_c21ff9_age_0002
-    quantity: pH
-    ask_age_days: 28.0
-- id: qa_porosity_lc3_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 55, metakaolin 30, limestone 15, w/b 0.4 at
-    age 28 days and report the porosity.
-  grading:
-    answer_kind: numeric
-    target: 0.576208
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122331_f1072173_bdd0d7_age_0001
-    quantity: porosity
-    ask_age_days: 28.0
-- id: qa_porosity_opc50_slag30_fa20_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 50, slag 30, fly ash 20, w/b 0.5 at age 28 days
-    and report the porosity.
-  grading:
-    answer_kind: numeric
-    target: 0.607935
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122332_82e88ad1_a10145_age_0001
-    quantity: porosity
-    ask_age_days: 28.0
-- id: qa_porosity_opc92_sf8_28d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 92, silica fume 8, w/b 0.35 at age 28 days and
-    report the porosity.
-  grading:
-    answer_kind: numeric
-    target: 0.557788
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122332_a8540fce_132c9f_age_0001
-    quantity: porosity
-    ask_age_days: 28.0
-- id: qa_sysvol_opc100_90d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.4 at age 90 days and report the total
-    system volume.
-  grading:
-    answer_kind: numeric
-    target: 63.959447
-    rel_tol: 0.02
-    extract: volume
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122332_4cd247b8_1d0640_age_0001
-    quantity: system_volume
-    ask_age_days: 90.0
-- id: qa_ts_porosity_opc60_slag40_1d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 over ages 1, 28, 90 days
-    and report the porosity at age 1 days.
-  grading:
-    answer_kind: numeric
-    target: 0.596825
-    rel_tol: 0.02
-    extract: porosity
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122332_d0e1440d_6fc55d_age_0001
-    quantity: porosity
-    ask_age_days: 1.0
-- id: qa_ts_sysvol_opc70_fa30_90d
-  kind: agent_qa
-  family: forward_lookup
-  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 over ages 28, 90 days
-    and report the total system volume at age 90 days.
-  grading:
-    answer_kind: numeric
-    target: 60.977397
-    rel_tol: 0.02
-    extract: volume
-  constraints:
-    max_tool_calls: 8
-    min_tool_calls: 2
-  allow_real: false
-  provenance:
-    grounding: mock
-    recipe_id: forward_query_20260820_122333_b8741b23_b5c8f1_age_0002
-    quantity: system_volume
-    ask_age_days: 90.0
 - id: qa_real_porosity_opc100_28d
   kind: agent_qa
   family: real_grounded
@@ -701,3 +360,344 @@ scenarios:
     recipe_id: forward_query_20260821_094214_0902ca6d_89d62d_age_0001
     quantity: phase_mass:Portlandite
     ask_age_days: 28.0
+- id: qa_porosity_opc60_slag40_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 at age 28 days and report
+    the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.587398
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005100_3c7b00ed_403886_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_ph_opc60_slag40_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 at age 28 days and report
+    the pore-solution pH.
+  grading:
+    answer_kind: numeric
+    target: 12.6
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005101_b1069025_23cb2d_age_0001
+    quantity: pH
+    ask_age_days: 28.0
+- id: qa_porosity_opc100_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.5 at age 28 days and report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.61807
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005101_6d4abbad_b0e438_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_ph_opc100_7d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.5 at age 7 days and report the pore-solution
+    pH.
+  grading:
+    answer_kind: numeric
+    target: 12.6
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005101_c666bf62_6004e4_age_0001
+    quantity: pH
+    ask_age_days: 7.0
+- id: qa_porosity_opc70_fa30_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 at age 28 days and report
+    the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.546281
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005101_20faafbd_5c6e8b_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_ph_opc70_fa30_90d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 at age 90 days and report
+    the pore-solution pH.
+  grading:
+    answer_kind: numeric
+    target: 12.6
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005101_a9a24237_a5d2ab_age_0001
+    quantity: pH
+    ask_age_days: 90.0
+- id: qa_porosity_opc80_slag20_lowwb_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 80, slag 20, w/b 0.35 at age 28 days and report
+    the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.529624
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005102_63af1ed5_f6abd8_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_sysvol_opc60_slag40_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 at age 28 days and report
+    the total system volume.
+  grading:
+    answer_kind: numeric
+    target: 64.80387
+    rel_tol: 0.02
+    extract: volume
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005102_14b132c6_dd3b46_age_0001
+    quantity: system_volume
+    ask_age_days: 28.0
+- id: qa_ts_porosity_opc60_slag40_90d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 over ages 7, 28, 90 days
+    and report the porosity at age 90 days.
+  grading:
+    answer_kind: numeric
+    target: 0.589013
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005102_540e0f71_359b8a_age_0003
+    quantity: porosity
+    ask_age_days: 90.0
+- id: qa_ts_ph_opc100_1d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.5 over ages 1, 7, 28 days and report
+    the pore-solution pH at age 1 days.
+  grading:
+    answer_kind: numeric
+    target: 12.6
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005102_feff0ec2_d404bd_age_0001
+    quantity: pH
+    ask_age_days: 1.0
+- id: qa_ts_porosity_opc70_fa30_7d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 over ages 7, 28, 90
+    days and report the porosity at age 7 days.
+  grading:
+    answer_kind: numeric
+    target: 0.538031
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005103_c1160ca0_bc3f8a_age_0001
+    quantity: porosity
+    ask_age_days: 7.0
+- id: qa_ts_ph_opc80_slag20_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 80, slag 20, w/b 0.35 over ages 7, 28 days and
+    report the pore-solution pH at age 28 days.
+  grading:
+    answer_kind: numeric
+    target: 12.6
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005103_6c821b0e_2a0058_age_0002
+    quantity: pH
+    ask_age_days: 28.0
+- id: qa_porosity_lc3_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 55, metakaolin 30, limestone 15, w/b 0.4 at
+    age 28 days and report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.564523
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005103_f1072173_3c0869_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_porosity_opc50_slag30_fa20_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 50, slag 30, fly ash 20, w/b 0.5 at age 28 days
+    and report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.598601
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005103_82e88ad1_51311a_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_porosity_opc92_sf8_28d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 92, silica fume 8, w/b 0.35 at age 28 days and
+    report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.53617
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005104_a8540fce_6997ca_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_sysvol_opc100_90d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 100, w/b 0.4 at age 90 days and report the total
+    system volume.
+  grading:
+    answer_kind: numeric
+    target: 65.174254
+    rel_tol: 0.02
+    extract: volume
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005104_4cd247b8_c987b9_age_0001
+    quantity: system_volume
+    ask_age_days: 90.0
+- id: qa_ts_porosity_opc60_slag40_1d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 60, slag 40, w/b 0.45 over ages 1, 28, 90 days
+    and report the porosity at age 1 days.
+  grading:
+    answer_kind: numeric
+    target: 0.584495
+    rel_tol: 0.02
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005104_d0e1440d_d9fcf3_age_0001
+    quantity: porosity
+    ask_age_days: 1.0
+- id: qa_ts_sysvol_opc70_fa30_90d
+  kind: agent_qa
+  family: forward_lookup
+  task: Run a mock forward calculation for a paste of OPC 70, fly ash 30, w/b 0.4 over ages 28, 90 days
+    and report the total system volume at age 90 days.
+  grading:
+    answer_kind: numeric
+    target: 61.827762
+    rel_tol: 0.02
+    extract: volume
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: false
+  provenance:
+    grounding: mock
+    recipe_id: forward_query_20260903_005104_b8741b23_71e96d_age_0002
+    quantity: system_volume
+    ask_age_days: 90.0

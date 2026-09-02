@@ -1,0 +1,302 @@
+scenarios:
+- id: qa_real_porosity_opc100_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 100, w/b 0.5 at age 28 days and
+    report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.343046
+    rel_tol: 0.03
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005106_5e39e832_39f811_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_real_ph_opc60_slag40_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 60, slag 40, w/b 0.45 at age 28
+    days and report the pore-solution pH.
+  grading:
+    answer_kind: numeric
+    target: 13.322016
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005106_13b278b9_46bccd_age_0001
+    quantity: pH
+    ask_age_days: 28.0
+- id: qa_real_porosity_opc60_slag40_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 60, slag 40, w/b 0.45 at age 28
+    days and report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.347699
+    rel_tol: 0.03
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005106_f4790006_564149_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_real_ph_opc100_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 100, w/b 0.5 at age 28 days and
+    report the pore-solution pH.
+  grading:
+    answer_kind: numeric
+    target: 13.533572
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005107_51126bd3_117374_age_0001
+    quantity: pH
+    ask_age_days: 28.0
+- id: qa_real_porosity_opc70_fa30_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 70, fly ash 30, w/b 0.4 at age
+    28 days and report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.325727
+    rel_tol: 0.03
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005107_eba80764_e38a7d_age_0001
+    quantity: porosity
+    ask_age_days: 28.0
+- id: qa_real_ph_opc70_fa30_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 70, fly ash 30, w/b 0.4 at age
+    28 days and report the pore-solution pH.
+  grading:
+    answer_kind: numeric
+    target: 13.539425
+    abs_tol: 0.1
+    extract: pH
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005107_3a612029_def51d_age_0001
+    quantity: pH
+    ask_age_days: 28.0
+- id: qa_real_porosity_opc100_90d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 100, w/b 0.5 at age 90 days and
+    report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.318198
+    rel_tol: 0.03
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005107_fde8a64d_030602_age_0001
+    quantity: porosity
+    ask_age_days: 90.0
+- id: qa_real_porosity_opc60_slag40_90d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 60, slag 40, w/b 0.45 at age 90
+    days and report the porosity.
+  grading:
+    answer_kind: numeric
+    target: 0.307054
+    rel_tol: 0.03
+    extract: porosity
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005108_c4182131_d97b77_age_0001
+    quantity: porosity
+    ask_age_days: 90.0
+- id: qa_real_phase_ch_opc100_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 100, w/b 0.5 at age 28 days and
+    report the mass of the Portlandite phase as reported in the run artifacts.
+  grading:
+    answer_kind: numeric
+    target: 0.023514
+    rel_tol: 0.03
+    extract: Portlandite
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005108_eb7904e6_330ada_age_0001
+    quantity: phase_mass:Portlandite
+    ask_age_days: 28.0
+- id: qa_real_phase_ch_opc100_90d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 100, w/b 0.5 at age 90 days and
+    report the mass of the Portlandite phase as reported in the run artifacts.
+  grading:
+    answer_kind: numeric
+    target: 0.026178
+    rel_tol: 0.03
+    extract: Portlandite
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005108_a70cd3e0_c78cf2_age_0001
+    quantity: phase_mass:Portlandite
+    ask_age_days: 90.0
+- id: qa_real_phase_ch_opc60_slag40_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 60, slag 40, w/b 0.45 at age 28
+    days and report the mass of the Portlandite phase as reported in the run artifacts.
+  grading:
+    answer_kind: numeric
+    target: 0.006697
+    rel_tol: 0.03
+    extract: Portlandite
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005109_a37eba08_49a275_age_0001
+    quantity: phase_mass:Portlandite
+    ask_age_days: 28.0
+- id: qa_real_phase_ch_opc70_fa30_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 70, fly ash 30, w/b 0.4 at age
+    28 days and report the mass of the Portlandite phase as reported in the run artifacts.
+  grading:
+    answer_kind: numeric
+    target: 0.004598
+    rel_tol: 0.03
+    extract: Portlandite
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005109_fc05b048_828f76_age_0001
+    quantity: phase_mass:Portlandite
+    ask_age_days: 28.0
+- id: qa_real_phase_ettringite_opc100_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 100, w/b 0.5 at age 28 days and
+    report the mass of the ettringite phase as reported in the run artifacts.
+  grading:
+    answer_kind: numeric
+    target: 0.009308
+    abs_tol: 0.001
+    extract: ettringite
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005110_1b7f6e5a_ef323d_age_0001
+    quantity: phase_mass:ettringite
+    ask_age_days: 28.0
+- id: qa_real_phase_mc_opc95_ls5_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 95, limestone 5, w/b 0.5 at age
+    28 days and report the mass of the monocarbonate phase (kernel phase name C4AcH11) as reported in
+    the run artifacts.
+  grading:
+    answer_kind: numeric
+    target: 0.006816
+    rel_tol: 0.03
+    extract: C4AcH11
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005110_7463ab9d_7473ed_age_0001
+    quantity: phase_mass:C4AcH11
+    ask_age_days: 28.0
+- id: qa_real_phase_ch_opc95_ls5_28d
+  kind: agent_qa
+  family: real_grounded
+  task: Run a forward calculation with real xGEMS execution (allowed for this task; pass use_mock=false
+    and dat_lst="${INVERSE_GEMS_ROOT}/Test-dat.lst") for a paste of OPC 95, limestone 5, w/b 0.5 at age
+    28 days and report the mass of the Portlandite phase as reported in the run artifacts.
+  grading:
+    answer_kind: numeric
+    target: 0.022265
+    rel_tol: 0.03
+    extract: Portlandite
+  constraints:
+    max_tool_calls: 8
+    min_tool_calls: 2
+  allow_real: true
+  provenance:
+    grounding: real
+    recipe_id: forward_query_20260903_005111_0902ca6d_ccae65_age_0001
+    quantity: phase_mass:Portlandite
+    ask_age_days: 28.0
