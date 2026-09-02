@@ -367,7 +367,7 @@ scenarios:
     the porosity.
   grading:
     answer_kind: numeric
-    target: 0.58085
+    target: 0.587398
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -376,7 +376,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002031_3c7b00ed_193faf_age_0001
+    recipe_id: forward_query_20260903_005100_3c7b00ed_403886_age_0001
     quantity: porosity
     ask_age_days: 28.0
 - id: qa_ph_opc60_slag40_28d
@@ -395,7 +395,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002031_b1069025_00656f_age_0001
+    recipe_id: forward_query_20260903_005101_b1069025_23cb2d_age_0001
     quantity: pH
     ask_age_days: 28.0
 - id: qa_porosity_opc100_28d
@@ -404,7 +404,7 @@ scenarios:
   task: Run a mock forward calculation for a paste of OPC 100, w/b 0.5 at age 28 days and report the porosity.
   grading:
     answer_kind: numeric
-    target: 0.607675
+    target: 0.61807
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -413,7 +413,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002031_6d4abbad_ff9686_age_0001
+    recipe_id: forward_query_20260903_005101_6d4abbad_b0e438_age_0001
     quantity: porosity
     ask_age_days: 28.0
 - id: qa_ph_opc100_7d
@@ -432,7 +432,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002031_c666bf62_6c8178_age_0001
+    recipe_id: forward_query_20260903_005101_c666bf62_6004e4_age_0001
     quantity: pH
     ask_age_days: 7.0
 - id: qa_porosity_opc70_fa30_28d
@@ -442,7 +442,7 @@ scenarios:
     the porosity.
   grading:
     answer_kind: numeric
-    target: 0.53845
+    target: 0.546281
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -451,7 +451,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002031_20faafbd_deb0df_age_0001
+    recipe_id: forward_query_20260903_005101_20faafbd_5c6e8b_age_0001
     quantity: porosity
     ask_age_days: 28.0
 - id: qa_ph_opc70_fa30_90d
@@ -470,7 +470,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002032_a9a24237_3fc078_age_0001
+    recipe_id: forward_query_20260903_005101_a9a24237_a5d2ab_age_0001
     quantity: pH
     ask_age_days: 90.0
 - id: qa_porosity_opc80_slag20_lowwb_28d
@@ -480,7 +480,7 @@ scenarios:
     the porosity.
   grading:
     answer_kind: numeric
-    target: 0.519547
+    target: 0.529624
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -489,7 +489,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002032_63af1ed5_79b2ff_age_0001
+    recipe_id: forward_query_20260903_005102_63af1ed5_f6abd8_age_0001
     quantity: porosity
     ask_age_days: 28.0
 - id: qa_sysvol_opc60_slag40_28d
@@ -499,7 +499,7 @@ scenarios:
     the total system volume.
   grading:
     answer_kind: numeric
-    target: 65.558016
+    target: 64.80387
     rel_tol: 0.02
     extract: volume
   constraints:
@@ -508,7 +508,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002032_14b132c6_0afc3e_age_0001
+    recipe_id: forward_query_20260903_005102_14b132c6_dd3b46_age_0001
     quantity: system_volume
     ask_age_days: 28.0
 - id: qa_ts_porosity_opc60_slag40_90d
@@ -518,7 +518,7 @@ scenarios:
     and report the porosity at age 90 days.
   grading:
     answer_kind: numeric
-    target: 0.582472
+    target: 0.589013
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -527,7 +527,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002032_540e0f71_029708_age_0003
+    recipe_id: forward_query_20260903_005102_540e0f71_359b8a_age_0003
     quantity: porosity
     ask_age_days: 90.0
 - id: qa_ts_ph_opc100_1d
@@ -546,7 +546,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002033_feff0ec2_d7b296_age_0001
+    recipe_id: forward_query_20260903_005102_feff0ec2_d404bd_age_0001
     quantity: pH
     ask_age_days: 1.0
 - id: qa_ts_porosity_opc70_fa30_7d
@@ -556,7 +556,7 @@ scenarios:
     days and report the porosity at age 7 days.
   grading:
     answer_kind: numeric
-    target: 0.530227
+    target: 0.538031
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -565,7 +565,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002033_c1160ca0_e65e65_age_0001
+    recipe_id: forward_query_20260903_005103_c1160ca0_bc3f8a_age_0001
     quantity: porosity
     ask_age_days: 7.0
 - id: qa_ts_ph_opc80_slag20_28d
@@ -584,7 +584,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002033_6c821b0e_1f36fb_age_0002
+    recipe_id: forward_query_20260903_005103_6c821b0e_2a0058_age_0002
     quantity: pH
     ask_age_days: 28.0
 - id: qa_porosity_lc3_28d
@@ -594,7 +594,7 @@ scenarios:
     age 28 days and report the porosity.
   grading:
     answer_kind: numeric
-    target: 0.558299
+    target: 0.564523
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -603,7 +603,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002034_f1072173_5bf542_age_0001
+    recipe_id: forward_query_20260903_005103_f1072173_3c0869_age_0001
     quantity: porosity
     ask_age_days: 28.0
 - id: qa_porosity_opc50_slag30_fa20_28d
@@ -613,7 +613,7 @@ scenarios:
     and report the porosity.
   grading:
     answer_kind: numeric
-    target: 0.59362
+    target: 0.598601
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -622,7 +622,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002034_82e88ad1_79321a_age_0001
+    recipe_id: forward_query_20260903_005103_82e88ad1_51311a_age_0001
     quantity: porosity
     ask_age_days: 28.0
 - id: qa_porosity_opc92_sf8_28d
@@ -632,7 +632,7 @@ scenarios:
     report the porosity.
   grading:
     answer_kind: numeric
-    target: 0.524675
+    target: 0.53617
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -641,7 +641,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002034_a8540fce_5fafdc_age_0001
+    recipe_id: forward_query_20260903_005104_a8540fce_6997ca_age_0001
     quantity: porosity
     ask_age_days: 28.0
 - id: qa_sysvol_opc100_90d
@@ -651,7 +651,7 @@ scenarios:
     system volume.
   grading:
     answer_kind: numeric
-    target: 66.279278
+    target: 65.174254
     rel_tol: 0.02
     extract: volume
   constraints:
@@ -660,7 +660,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002034_4cd247b8_064077_age_0001
+    recipe_id: forward_query_20260903_005104_4cd247b8_c987b9_age_0001
     quantity: system_volume
     ask_age_days: 90.0
 - id: qa_ts_porosity_opc60_slag40_1d
@@ -670,7 +670,7 @@ scenarios:
     and report the porosity at age 1 days.
   grading:
     answer_kind: numeric
-    target: 0.578033
+    target: 0.584495
     rel_tol: 0.02
     extract: porosity
   constraints:
@@ -679,7 +679,7 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002034_d0e1440d_6a89c0_age_0001
+    recipe_id: forward_query_20260903_005104_d0e1440d_d9fcf3_age_0001
     quantity: porosity
     ask_age_days: 1.0
 - id: qa_ts_sysvol_opc70_fa30_90d
@@ -689,7 +689,7 @@ scenarios:
     and report the total system volume at age 90 days.
   grading:
     answer_kind: numeric
-    target: 62.601279
+    target: 61.827762
     rel_tol: 0.02
     extract: volume
   constraints:
@@ -698,6 +698,6 @@ scenarios:
   allow_real: false
   provenance:
     grounding: mock
-    recipe_id: forward_query_20260903_002035_b8741b23_c71ab2_age_0002
+    recipe_id: forward_query_20260903_005104_b8741b23_71e96d_age_0002
     quantity: system_volume
     ask_age_days: 90.0
