@@ -197,3 +197,72 @@ def test_agent_tool_wrapper_contract(tmp_path, monkeypatch):
     assert result["summary"]["id"] == "agent_cal"
     assert "slag" in result["summary"]["fits"]
     assert result["artifacts"]["reaction_model_config"].endswith("reaction_parameters.agent_cal.yaml")
+
+
+# --- reaction_model_config / materials_config threading (mock-only) ---
+PINNED_SLAG_CONFIG = {
+    "id": "t",
+    "scm_reaction": {"slag": {"A": 0.3, "B": 1, "C": 1, "D": 0.3, "G": 1}},
+    "availability_modifier": {"enabled": False},
+}
+
+
+def test_run_forward_honours_reaction_model_config(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    config = tmp_path / "pinned_slag.yaml"
+    config.write_text(yaml.safe_dump(PINNED_SLAG_CONFIG), encoding="utf-8")
+
+    result = agent_tools.run_forward(
+        FORWARD_QUERY, "run", "db", use_mock=True, reaction_model_config=str(config)
+    )
+    _assert_contract(result)
+    assert result["ok"] is True, result["error"]
+
+    degrees = sorted((tmp_path / "db" / "recipe_runs").glob("*/reaction_degrees.json"))
+    assert degrees
+    for path in degrees:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        assert payload["scm"]["slag"] == pytest.approx(0.3)
+
+
+def test_run_forward_rejects_config_outside_artifact_roots(tmp_path, monkeypatch):
+    workdir = tmp_path / "work"
+    workdir.mkdir()
+    monkeypatch.chdir(workdir)
+    monkeypatch.delenv(agent_tools.ARTIFACT_ROOTS_ENV, raising=False)
+    outside = tmp_path / "outside.yaml"
+    outside.write_text(yaml.safe_dump(PINNED_SLAG_CONFIG), encoding="utf-8")
+
+    result = agent_tools.run_forward(
+        FORWARD_QUERY, "run", "db", use_mock=True, reaction_model_config=str(outside)
+    )
+    _assert_contract(result)
+    assert result["ok"] is False
+    assert "outside the allowed artifact roots" in result["error"]
+
+
+def test_optional_kernel_kwargs_follows_kernel_signature():
+    def kernel(*, reaction_model_config=None, **_ignored):
+        return None
+
+    def strict_kernel(*, reaction_model_config=None):
+        return None
+
+    assert agent_tools._optional_kernel_kwargs(strict_kernel, reaction_model_config=None) == {}
+    assert agent_tools._optional_kernel_kwargs(strict_kernel, reaction_model_config="x") == {
+        "reaction_model_config": "x"
+    }
+    assert agent_tools._optional_kernel_kwargs(kernel, materials_config="m") == {"materials_config": "m"}
+    with pytest.raises(TypeError, match="materials_config"):
+        agent_tools._optional_kernel_kwargs(strict_kernel, materials_config="m")
+
+
+def test_mcp_wrappers_expose_reaction_model_kwargs():
+    pytest.importorskip("mcp")
+    from gemspilot.mcp_server import app
+
+    tools = {tool.name: tool for tool in asyncio.run(app.list_tools())}
+    for name in ["run_forward", "run_task", "run_confirmed_query", "run_design_with_recovery"]:
+        schema = getattr(tools[name], "input_schema", None) or tools[name].inputSchema  # mcp 2.x / 1.x
+        properties = schema["properties"]
+        assert {"reaction_model_config", "reaction_model_id", "materials_config"} <= set(properties), name

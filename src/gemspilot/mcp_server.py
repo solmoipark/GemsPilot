@@ -78,6 +78,9 @@ def run_forward(
     retry_water_on_failure: bool = False,
     retry_water_policy: str = "diagnosis",
     max_xgems_calls: int | None = None,
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
     session: str | None = None,
 ) -> dict[str, Any]:
     """Run a forward query (YAML text or file path). use_mock=False triggers real xGEMS.
@@ -87,6 +90,9 @@ def run_forward(
     xGEMS water; every attempt and its diagnosis is recorded.
     max_xgems_calls caps non-cached solver invocations for this request;
     session (a directory or .jsonl path) logs the outcome for later recall.
+    reaction_model_config / reaction_model_id select the reaction parameter
+    set (e.g. a calibrate_scm_kinetics output); materials_config overrides
+    the materials YAML.
     """
     return agent_tools.run_forward(
         forward_query,
@@ -97,6 +103,9 @@ def run_forward(
         retry_water_on_failure=retry_water_on_failure,
         retry_water_policy=retry_water_policy,
         max_xgems_calls=max_xgems_calls,
+        reaction_model_config=reaction_model_config,
+        reaction_model_id=reaction_model_id,
+        materials_config=materials_config,
         session=session,
     )
 
@@ -109,6 +118,9 @@ def run_task(
     use_mock: bool = True,
     skip_validation: bool = False,
     dat_lst: str | None = None,
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
     session: str | None = None,
 ) -> dict[str, Any]:
     """Run a structured task_query (forward or inverse design). use_mock=False triggers real xGEMS."""
@@ -119,6 +131,9 @@ def run_task(
         use_mock=use_mock,
         skip_validation=skip_validation,
         dat_lst=dat_lst,
+        reaction_model_config=reaction_model_config,
+        reaction_model_id=reaction_model_id,
+        materials_config=materials_config,
         session=session,
     )
 
@@ -131,6 +146,9 @@ def run_confirmed_query(
     use_mock: bool = True,
     skip_validation: bool = False,
     dat_lst: str | None = None,
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
 ) -> dict[str, Any]:
     """Execute a human-confirmed task_query preview directory."""
     return agent_tools.run_confirmed_query(
@@ -140,6 +158,9 @@ def run_confirmed_query(
         use_mock=use_mock,
         skip_validation=skip_validation,
         dat_lst=dat_lst,
+        reaction_model_config=reaction_model_config,
+        reaction_model_id=reaction_model_id,
+        materials_config=materials_config,
     )
 
 
@@ -181,6 +202,9 @@ def run_design_with_recovery(
     max_attempts: int = 3,
     model_registry: str | None = None,
     target_policy: str = "recommended",
+    reaction_model_config: str | None = None,
+    reaction_model_id: str | None = None,
+    materials_config: str | None = None,
     session: str | None = None,
 ) -> dict[str, Any]:
     """Observe-replan loop: diagnose -> apply top relaxation -> re-run (bounded, fully logged)."""
@@ -193,6 +217,9 @@ def run_design_with_recovery(
         max_attempts=max_attempts,
         model_registry=model_registry,
         target_policy=target_policy,
+        reaction_model_config=reaction_model_config,
+        reaction_model_id=reaction_model_id,
+        materials_config=materials_config,
         session=session,
     )
 
