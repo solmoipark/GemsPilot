@@ -184,3 +184,36 @@ def test_policy_check_semantics_unchanged_for_read_mock_ok_and_real_gated():
     assert _policy_check(mock_ok, {"use_mock": False}, allow_real=False) is not None
     assert _policy_check(mock_ok, {"use_mock": "false"}, allow_real=False) is not None
     assert _policy_check(mock_ok, {"use_mock": False}, allow_real=True) is None
+
+def test_policy_check_covers_all_four_policies():
+    read = ToolSpec("r", lambda: {}, "read")
+    mock_ok = ToolSpec("m", lambda: {}, "mock_ok")
+    real_gated = ToolSpec("g", lambda: {}, "real_gated")
+    write = ToolSpec("w", lambda: {}, "write")
+
+    # read: always approved, whatever the arguments say.
+    for allow_real in (False, True):
+        assert _policy_check(read, {"use_mock": False, "dry_run": False}, allow_real=allow_real) is None
+
+    # mock_ok: mock runs approved; real runs only when the episode allows them.
+    assert _policy_check(mock_ok, {}, allow_real=False) is None
+    assert _policy_check(mock_ok, {"use_mock": True}, allow_real=False) is None
+    for value in (False, "false", "False", 0):
+        assert "use_mock=true" in _policy_check(mock_ok, {"use_mock": value}, allow_real=False)
+    assert _policy_check(mock_ok, {"use_mock": False}, allow_real=True) is None
+
+    # real_gated: real runs are never approved, even when the episode allows them.
+    assert _policy_check(real_gated, {"use_mock": True}, allow_real=True) is None
+    assert _policy_check(real_gated, {"use_mock": False}, allow_real=True) is not None
+    assert _policy_check(real_gated, {"use_mock": False}, allow_real=False) is not None
+
+    # write: dry runs (the default) are approved; real writes need allow_real.
+    assert _policy_check(write, {}, allow_real=False) is None
+    assert _policy_check(write, {"dry_run": True}, allow_real=False) is None
+    assert _policy_check(write, {"dry_run": "true"}, allow_real=False) is None
+    for value in (False, "false", "False", 0):
+        denial = _policy_check(write, {"dry_run": value}, allow_real=False)
+        assert denial is not None
+        assert "writing outside dry-run" in denial
+        assert "dry_run=true" in denial
+    assert _policy_check(write, {"dry_run": False}, allow_real=True) is None

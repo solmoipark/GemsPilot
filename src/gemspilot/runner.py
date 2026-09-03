@@ -4,9 +4,10 @@ The runner connects a language model (any provider supported by litellm) to
 the GemsPilot tool layer. The model selects and parameterizes tools; every
 tool executes deterministic kernel code. Governance is enforced outside the
 model: an approval policy decides which calls run (read-only and mock calls
-auto-approve; real xGEMS execution requires an explicit episode flag), tool
-paths are remapped into an episode workspace, and every step is recorded to
-a JSONL trajectory for failure analysis.
+auto-approve; real xGEMS execution requires an explicit episode flag; tools
+with the ``write`` policy only run as dry runs unless the episode allows
+real execution), tool paths are remapped into an episode workspace, and
+every step is recorded to a JSONL trajectory for failure analysis.
 
 Two output-access protocols are supported, mirroring the ablation of
 PHREEQC-MCQ-200 (arXiv:2607.00436):
@@ -61,7 +62,11 @@ _JSON_TYPES = {str: "string", int: "integer", float: "number", bool: "boolean",
 class ToolSpec:
     name: str
     func: Callable[..., dict[str, Any]]
-    policy: str  # "read" | "mock_ok" | "real_gated"
+    # "read": always approved; "mock_ok": approved unless use_mock is false
+    # and the episode disallows real execution; "real_gated": never approved
+    # with use_mock false; "write": approved only with dry_run true (the
+    # default) unless the episode allows real execution.
+    policy: str  # "read" | "mock_ok" | "real_gated" | "write"
     description: str = ""
 
 
@@ -289,8 +294,21 @@ def _apply_protocol(result: dict[str, Any], protocol: str) -> dict[str, Any]:
 
 
 def _policy_check(spec: ToolSpec, arguments: dict[str, Any], allow_real: bool) -> str | None:
-    """Return a refusal message, or None if the call is approved."""
+    """Return a refusal message, or None if the call is approved.
+
+    ``read`` tools always run. ``write`` tools run only as dry runs
+    (``dry_run`` defaults to true) unless the episode allows real execution.
+    ``mock_ok`` / ``real_gated`` tools are gated on ``use_mock`` as before.
+    """
     if spec.policy == "read":
+        return None
+    if spec.policy == "write":
+        dry_run = arguments.get("dry_run", True)
+        if dry_run in (False, "false", "False", 0) and not allow_real:
+            return (
+                "DENIED by approval policy: writing outside dry-run is not allowed in this "
+                "episode. Re-run with dry_run=true."
+            )
         return None
     use_mock = arguments.get("use_mock", True)
     if use_mock in (False, "false", "False", 0):
