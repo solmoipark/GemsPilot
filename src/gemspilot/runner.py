@@ -19,6 +19,7 @@ PHREEQC-MCQ-200 (arXiv:2607.00436):
 
 from __future__ import annotations
 
+import importlib.metadata
 import inspect
 import json
 import os
@@ -26,7 +27,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 from . import agent_tools
 
@@ -114,9 +115,66 @@ def build_tool_schema(spec: ToolSpec) -> dict[str, Any]:
     }
 
 
-def default_toolset() -> list[ToolSpec]:
+TOOLSET_ENTRY_POINT_GROUP = "gemspilot.toolsets"
+_DISCOVERY_WARNINGS: list[str] = []
+
+
+def toolset_discovery_warnings() -> list[str]:
+    """Warnings collected by the most recent ``gemspilot.toolsets`` discovery."""
+    return list(_DISCOVERY_WARNINGS)
+
+
+def _coerce_tool_spec(candidate: Any) -> ToolSpec:
+    """Accept a ToolSpec or any object exposing ``.name`` / ``.func`` / ``.policy``."""
+    if isinstance(candidate, ToolSpec):
+        return candidate
+    name = getattr(candidate, "name", None)
+    func = getattr(candidate, "func", None)
+    policy = getattr(candidate, "policy", None)
+    if not isinstance(name, str) or not name or not callable(func) or not isinstance(policy, str):
+        raise TypeError(f"{candidate!r} is not ToolSpec-like (needs .name, .func, .policy)")
+    return ToolSpec(name, func, policy, str(getattr(candidate, "description", "") or ""))
+
+
+def discover_toolsets() -> list[ToolSpec]:
+    """Load every ToolSpec published under the ``gemspilot.toolsets`` entry-point group.
+
+    Each entry point must resolve to an iterable of ToolSpec-like objects (or a
+    zero-argument callable returning one). This never raises: a broken entry
+    point is skipped and reported through :func:`toolset_discovery_warnings`.
+    """
+    _DISCOVERY_WARNINGS.clear()
+    found: list[ToolSpec] = []
+    try:
+        entry_points = list(importlib.metadata.entry_points(group=TOOLSET_ENTRY_POINT_GROUP))
+    except Exception as exc:  # noqa: BLE001 - discovery must never break the runner
+        _DISCOVERY_WARNINGS.append(f"toolset entry-point lookup failed: {type(exc).__name__}: {exc}")
+        return found
+    for entry_point in entry_points:
+        try:
+            loaded = entry_point.load()
+            if callable(loaded) and not isinstance(loaded, (list, tuple)):
+                loaded = loaded()
+            specs = [_coerce_tool_spec(item) for item in loaded]
+        except Exception as exc:  # noqa: BLE001
+            _DISCOVERY_WARNINGS.append(
+                f"toolset entry point {entry_point.name!r} ({entry_point.value}) skipped: "
+                f"{type(exc).__name__}: {exc}"
+            )
+            continue
+        found.extend(specs)
+    return found
+
+
+def default_toolset(extra: Iterable[ToolSpec] = (), *, discover: bool = True) -> list[ToolSpec]:
+    """Built-in tools, followed by ``extra`` and (when ``discover``) entry-point toolsets.
+
+    Later entries never shadow earlier ones: a tool whose name is already
+    present is skipped (discovered duplicates are reported through
+    :func:`toolset_discovery_warnings`).
+    """
     tools = agent_tools
-    return [
+    builtin = [
         ToolSpec("validate_task_query", tools.validate_task_query, "read"),
         ToolSpec("validate_forward_query", tools.validate_forward_query, "read"),
         ToolSpec("run_forward", tools.run_forward, "mock_ok"),
@@ -133,6 +191,20 @@ def default_toolset() -> list[ToolSpec]:
         ToolSpec("filter_candidates", tools.filter_candidates, "read"),
         ToolSpec("calibrate_scm_kinetics", tools.calibrate_scm_kinetics, "mock_ok"),
     ]
+    specs = list(builtin)
+    seen = {spec.name for spec in specs}
+    for spec in (_coerce_tool_spec(item) for item in extra):
+        if spec.name not in seen:
+            seen.add(spec.name)
+            specs.append(spec)
+    if discover:
+        for spec in discover_toolsets():
+            if spec.name in seen:
+                _DISCOVERY_WARNINGS.append(f"discovered tool {spec.name!r} skipped: name already registered")
+                continue
+            seen.add(spec.name)
+            specs.append(spec)
+    return specs
 
 
 @dataclass

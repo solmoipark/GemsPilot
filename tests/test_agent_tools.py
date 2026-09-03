@@ -139,11 +139,11 @@ def test_read_artifact_rejects_paths_outside_roots(tmp_path, monkeypatch):
 
 def test_mcp_server_registers_all_tools():
     pytest.importorskip("mcp")
-    from gemspilot.mcp_server import app
+    from gemspilot import mcp_server
 
-    tools = asyncio.run(app.list_tools())
+    tools = asyncio.run(mcp_server.app.list_tools())
     names = {tool.name for tool in tools}
-    assert names == {
+    builtin = {
         "validate_task_query",
         "validate_forward_query",
         "parse_task_query",
@@ -163,6 +163,10 @@ def test_mcp_server_registers_all_tools():
         "recall_session",
         "filter_candidates",
     }
+    assert builtin <= names
+    # Anything beyond the built-ins must come from gemspilot.toolsets entry points.
+    assert names - builtin == set(mcp_server.EXTRA_TOOLS)
+    assert builtin.isdisjoint(mcp_server.EXTRA_TOOLS)
 
 
 # --- calibration tool wrapper (moved from kernel test_kinetics_calibration) ---
